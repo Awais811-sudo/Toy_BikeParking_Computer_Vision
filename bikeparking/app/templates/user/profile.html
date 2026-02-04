@@ -1,0 +1,669 @@
+{% extends 'base1.html' %}
+{% load static %}
+
+{% block title %}My Profile - Wheel Wise Vision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-main {
+        padding: 2rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-main::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 40%;
+        height: 100%;
+        background: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmlrZSUyMHBhcmtpbmclMjBiYWNrZ3JvdW5kfGVufDB8fDB8fHww') center/cover;
+        opacity: 0.1;
+        z-index: 0;
+    }
+
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .profile-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .profile-subtitle {
+        color: var(--text);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .bike-icon-large {
+        font-size: 4rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+    }
+
+    .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .profile-card-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: url('https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=200&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmlrZSUyMHBhdHRlcm58ZW58MHx8MHx8fDA%3D') center/cover;
+        opacity: 0.1;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2.5rem;
+        color: var(--primary);
+        border: 4px solid white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .user-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .user-email {
+        opacity: 0.9;
+        font-size: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-card-body {
+        padding: 2rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--light);
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+        border-left: 4px solid var(--primary);
+    }
+
+    .info-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .info-content h4 {
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .info-content p {
+        color: var(--text);
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--light);
+    }
+
+    .section-title i {
+        color: var(--primary);
+    }
+
+    .bookings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .booking-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .booking-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary);
+    }
+
+    .booking-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .booking-info {
+        flex: 1;
+    }
+
+    .booking-id {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .booking-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .booking-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-vehicle {
+        background: rgba(22, 163, 74, 0.1);
+        color: var(--primary);
+        border: 1px solid rgba(22, 163, 74, 0.2);
+    }
+
+    .badge-slot {
+        background: rgba(63, 55, 201, 0.1);
+        color: var(--secondary);
+        border: 1px solid rgba(63, 55, 201, 0.2);
+    }
+
+    .booking-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-active { background: #cce7ff; color: #004085; }
+    .status-completed { background: #d1ecf1; color: #0c5460; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    .status-expired { background: #fff3cd; color: #856404; }
+
+    .booking-timeline {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: var(--light);
+        border-radius: var(--border-radius);
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .timeline-icon {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .timeline-content h5 {
+        font-size: 0.8rem;
+        color: var(--text);
+        margin: 0;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .timeline-content p {
+        font-size: 0.9rem;
+        color: var(--dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .booking-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .no-bookings {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .no-bookings::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: url('https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=200&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmlrZSUyMHBhdHRlcm58ZW58MHx8MHx8fDA%3D') center/cover;
+        opacity: 0.05;
+    }
+
+    .no-bookings-icon {
+        font-size: 4rem;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        opacity: 0.7;
+    }
+
+    .no-bookings h3 {
+        color: var(--dark);
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .no-bookings p {
+        color: var(--text);
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(22, 163, 74, 0.3);
+    }
+
+    .bike-parking-feature {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(63, 55, 201, 0.05));
+        border-radius: var(--border-radius);
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary);
+    }
+
+    .bike-parking-feature i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+
+    .bike-parking-feature p {
+        margin: 0;
+        font-weight: 500;
+        color: var(--dark);
+    }
+
+    @media (max-width: 768px) {
+        .booking-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .booking-timeline {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-actions {
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .booking-meta {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-title {
+            font-size: 2rem;
+        }
+
+        .booking-card {
+            padding: 1rem;
+        }
+
+        .timeline-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Profile Main Content -->
+<div class="profile-main">
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="bike-icon-large">
+                <i class="fas fa-motorcycle"></i>
+            </div>
+            <h1 class="profile-title">My Profile</h1>
+            <p class="profile-subtitle">Manage your account and track your motorcycle parking reservations</p>
+            
+            <!-- Bike Parking Features -->
+            <div class="bike-parking-feature">
+                <i class="fas fa-shield-alt"></i>
+                <p>Secure motorcycle parking with AI-powered surveillance</p>
+            </div>
+        </div>
+
+        <!-- User Info Card -->
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 class="user-name">{{ user.get_full_name|default:user.username }}</h2>
+                <p class="user-email">{{ user.email }}</p>
+            </div>
+            
+            <div class="profile-card-body">
+                <!-- User Information -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Username</h4>
+                            <p>{{ user.username }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Email Address</h4>
+                            <p>{{ user.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Member Since</h4>
+                            <p>{{ user.date_joined|date:"F j, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-motorcycle"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Total Bookings</h4>
+                            <p>{{ bookings.count }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Bookings Section -->
+                <div class="bookings-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Recent Parking Bookings
+                    </h3>
+                    
+                    <div class="bookings-list">
+                        {% if bookings %}
+                            {% for booking in bookings|slice:":5" %}
+                            <div class="booking-card">
+                                <div class="booking-header">
+                                    <div class="booking-info">
+                                        <div class="booking-id">Booking #{{ booking.id }}</div>
+                                        <div class="booking-meta">
+                                            <span class="booking-badge badge-vehicle">
+                                                <i class="fas fa-motorcycle"></i>
+                                                {{ booking.vehicle_number }}
+                                            </span>
+                                            
+                                        </div>
+                                    </div>
+                                    <span class="booking-status status-{{ booking.status }}">
+                                        {{ booking.get_status_display }}
+                                    </span>
+                                </div>
+
+                                <div class="booking-timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-sign-in-alt"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h5>Start Time</h5>
+                                            <p>{{ booking.start_time|date:"M d, Y H:i" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h5>End Time</h5>
+                                            <p>{{ booking.end_time|date:"M d, Y H:i" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h5>Booked At</h5>
+                                            <p>{{ booking.booked_at|date:"M j, Y" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                
+                            </div>
+                            {% endfor %}
+                            
+                            {% if bookings.count > 5 %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'my_bookings' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i>
+                                    View All Bookings
+                                </a>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="no-bookings">
+                                <div class="no-bookings-icon">
+                                    <i class="fas fa-motorcycle"></i>
+                                </div>
+                                <h3>No Parking Bookings Yet</h3>
+                                <p>You haven't made any motorcycle parking reservations yet. Book your first spot to get started!</p>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bookingModal">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    Book Your First Spot
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add confirmation dialog for cancellation
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.cancel-booking-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Are you sure you want to cancel this booking?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

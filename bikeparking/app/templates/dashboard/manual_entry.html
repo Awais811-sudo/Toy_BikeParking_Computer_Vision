@@ -1,0 +1,971 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manual Entry/Exit - BikePark Manager{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Manual Entry/Exit</h1>
+            <p class="text-gray-600 mt-2">Manually record vehicle entries and exits</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <a href="{% url 'admin_dashboard' %}" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center hover:bg-gray-50 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Form Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Record Entry/Exit</h2>
+            
+            <form id="manualEntryForm" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Number *</label>
+                    <input type="text" name="vehicle_number" required 
+                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 vehicle-number-input"
+                           placeholder="Enter vehicle number (e.g., ABC1234)"
+                           maxlength="10"
+                           oninput="formatVehicleNumber(this)"
+                           onkeydown="preventInvalidInput(event)">
+                    <div class="text-xs text-gray-500 mt-1">
+                        • Max 10 characters • At least 1 letter and 1 number • No spaces • Auto-uppercase
+                    </div>
+                    <div id="vehicleNumberFeedback" class="mt-2 text-sm font-medium hidden"></div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Entry/Exit Type *</label>
+                    <div class="flex space-x-6">
+                        <label class="flex items-center">
+                            <input type="radio" name="action" value="entry" checked class="mr-3 text-blue-600 focus:ring-blue-500">
+                            <span class="text-lg">Entry</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="action" value="exit" class="mr-3 text-blue-600 focus:ring-blue-500">
+                            <span class="text-lg">Exit</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Automatic Time Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-800" id="currentTimeDisplay">Loading time...</p>
+                                <p class="text-xs text-gray-500 mt-1">Time will be recorded automatically</p>
+                            </div>
+                            <div class="flex items-center text-green-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-sm font-medium">Auto</span>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="timestamp" id="timestampInput">
+                </div>
+                
+                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed" id="submitButton">
+                    Record Entry/Exit
+                </button>
+            </form>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Recent Activity</h2>
+            <div class="space-y-4 max-h-96 overflow-y-auto">
+                {% for entry in recent_entries %}
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-semibold text-gray-800 text-lg">{{ entry.vehicle_number }}</p>
+                            <p class="text-sm text-gray-600">{{ entry.timestamp|time:"h:i A" }}</p>
+                        </div>
+                        <span class="{% if entry.action == 'entered' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} px-3 py-1 rounded-full text-sm font-medium">
+                            {{ entry.action|title }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8 text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p>No activity today</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Section -->
+    <div id="receiptSection" class="hidden mt-8 bg-white rounded-xl shadow-lg p-6 border-2 border-green-200">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-green-700">Receipt Generated Successfully!</h3>
+            <button onclick="closeReceipt()" class="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Receipt Content -->
+        <div id="receiptContent" class="bg-white border border-gray-300 p-3 font-mono text-xs max-w-xs mx-auto">
+            <div class="text-center mb-1">
+                <h2 class="font-bold text-sm">BikePark Manager</h2>
+                <p class="text-xs">iPad7/14670-Manager</p>
+            </div>
+            
+            <div class="flex justify-between text-xs mb-1">
+                <div>Receipt <span id="receiptNumberDisplay">R00000.2</span></div>
+                <div id="receiptDateDisplay">2023-05-30, 1:05 PM</div>
+            </div>
+            
+            <div class="border-t border-dashed border-gray-400 my-1"></div>
+            
+            <!-- Compact QR Code Section -->
+            <div class="flex justify-between items-start mb-2">
+                <div class="flex-1">
+                    <div class="mb-1">
+                        <span class="font-semibold">Vehicle:</span> <span id="receiptVehicleNumber">Vehicle Number</span>
+                    </div>
+                    <div class="mb-1">
+                        <span class="font-semibold">Ticket ID:</span> <span id="receiptTicketId">T000000</span>
+                    </div>
+                    <div>
+                        <span class="font-semibold">Entry:</span> <span id="receiptEntryTime">Entry Time</span>
+                    </div>
+                </div>
+                <div class="ml-2">
+                    <!-- Smaller QR Code -->
+                    <img src="{% static 'images/qr code .png' %}" 
+                         alt="QR Code" 
+                         class="w-12 h-12 border border-gray-300"
+                         onerror="this.style.display='none'">
+                    <p class="text-xs text-center mt-0 text-gray-600">Scan QR</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-dashed border-gray-400 my-1"></div>
+            
+            <div class="mb-1">
+                <div class="flex justify-between">
+                    <span>Parking Fee</span>
+                    <span>PKR 20</span>
+                </div>
+            </div>
+            
+            <div class="border-t border-dashed border-gray-400 my-1"></div>
+            
+            <div class="text-center mt-2">
+                <p class="text-xs">VAT:123456</p>
+                <p class="text-xs mt-0">Thank you for your patronage!</p>
+            </div>
+            
+            <div class="text-center mt-1 text-xs">
+                <p>Lightspeed (K) 23.19.1.9993</p>
+            </div>
+        </div>
+        
+        <div class="flex space-x-3 mt-4">
+            <button onclick="printReceipt()" class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd" />
+                </svg>
+                Print Receipt
+            </button>
+            <button onclick="downloadReceiptPDF()" class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+                Download PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Success/Error Modal -->
+    <div id="resultModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div class="p-6 text-center">
+                <div id="resultIcon" class="text-6xl mb-4">
+                    <!-- Icon will be set dynamically -->
+                </div>
+                <h3 id="resultTitle" class="text-xl font-bold mb-2"></h3>
+                <p id="resultMessage" class="text-gray-600 mb-6"></p>
+                <button onclick="closeResultModal()" class="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.hidden {
+    display: none;
+}
+
+/* Validation styles */
+.validation-valid {
+    border-color: #10b981 !important;
+    background-color: #f0fdf4;
+}
+
+.validation-invalid {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2;
+}
+
+.feedback-valid {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.feedback-invalid {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* Print styles for receipt */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #receiptContent, #receiptContent * {
+        visibility: visible;
+    }
+    #receiptContent {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm !important;
+        height: auto !important;
+        box-shadow: none;
+        border: none;
+        padding: 2mm;
+        font-size: 9pt !important;
+        transform-origin: top left;
+        transform: scale(1) !important;
+        max-width: 80mm !important;
+        margin: 0 !important;
+    }
+    
+    #receiptContent img {
+        width: 25mm !important;
+        height: 25mm !important;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    /* Remove all margins and padding for printing */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+/* Compact receipt styling for screen */
+#receiptContent {
+    max-width: 280px;
+    margin: 0 auto;
+}
+</style>
+
+<script>
+// Strict vehicle number validation functions
+function validateVehicleNumber(vehicleNumber) {
+    // Remove any spaces and convert to uppercase
+    vehicleNumber = vehicleNumber.replace(/\s/g, '').toUpperCase();
+    
+    // Check length (max 10 characters)
+    if (vehicleNumber.length > 10) {
+        return {
+            isValid: false,
+            message: 'Vehicle number cannot exceed 10 characters'
+        };
+    }
+    
+    // Check if at least one alphabet and one numeric character exists
+    const hasAlphabet = /[A-Z]/.test(vehicleNumber);
+    const hasNumeric = /[0-9]/.test(vehicleNumber);
+    
+    if (!hasAlphabet || !hasNumeric) {
+        return {
+            isValid: false,
+            message: 'Vehicle number must contain at least one letter and one number'
+        };
+    }
+    
+    // Check if all characters are valid (only alphanumeric)
+    const isValidFormat = /^[A-Z0-9]+$/.test(vehicleNumber);
+    if (!isValidFormat) {
+        return {
+            isValid: false,
+            message: 'Vehicle number can only contain letters and numbers (no spaces or special characters)'
+        };
+    }
+    
+    return {
+        isValid: true,
+        cleanedValue: vehicleNumber
+    };
+}
+
+// Prevent invalid characters from being entered - FIXED BACKSPACE
+function preventInvalidInput(event) {
+    const key = event.key;
+    
+    // Allow all control keys (backspace, delete, tab, enter, escape, etc.)
+    if (event.ctrlKey || event.altKey || event.metaKey || key.length > 1) {
+        return true;
+    }
+    
+    // Allow navigation and control keys
+    const allowedKeys = [
+        'Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 
+        'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+    ];
+    
+    if (allowedKeys.includes(key)) {
+        return true;
+    }
+    
+    // Allow only alphanumeric characters
+    if (!/^[a-zA-Z0-9]$/.test(key)) {
+        event.preventDefault();
+        return false;
+    }
+    
+    // Get current value
+    const input = event.target;
+    const currentValue = input.value.replace(/\s/g, '');
+    
+    // Prevent exceeding 10 characters
+    if (currentValue.length >= 10 && !allowedKeys.includes(key)) {
+        event.preventDefault();
+        showFeedback(input, 'error', 'Maximum 10 characters reached');
+        return false;
+    }
+    
+    return true;
+}
+
+// Also update the formatVehicleNumber function to handle backspace properly
+function formatVehicleNumber(input) {
+    let value = input.value.toUpperCase();
+    
+    // Remove any spaces and special characters
+    value = value.replace(/[^A-Z0-9]/g, '');
+    
+    // Limit to 10 characters
+    if (value.length > 10) {
+        value = value.substring(0, 10);
+        showFeedback(input, 'error', 'Maximum 10 characters reached');
+    } else {
+        // Validate the current value
+        const validation = validateVehicleNumber(value);
+        if (value.length > 0) {
+            showFeedback(input, validation.isValid ? 'success' : 'error', validation.message);
+        } else {
+            clearFeedback(input);
+        }
+    }
+    
+    // Update input value
+    input.value = value;
+    
+    // Update submit button state
+    updateSubmitButtonState(input);
+    
+    return validation;
+}
+// Real-time input formatting and validation
+function formatVehicleNumber(input) {
+    let value = input.value.toUpperCase();
+    
+    // Remove any spaces and special characters
+    value = value.replace(/[^A-Z0-9]/g, '');
+    
+    // Limit to 10 characters
+    if (value.length > 10) {
+        value = value.substring(0, 10);
+        showFeedback(input, 'error', 'Maximum 10 characters reached');
+    } else {
+        // Validate the current value
+        const validation = validateVehicleNumber(value);
+        if (value.length > 0) {
+            showFeedback(input, validation.isValid ? 'success' : 'error', validation.message);
+        } else {
+            clearFeedback(input);
+        }
+    }
+    
+    // Update input value
+    input.value = value;
+    
+    // Update submit button state
+    updateSubmitButtonState(input);
+    
+    return validation;
+}
+
+// Show validation feedback
+function showFeedback(input, type, message) {
+    const feedback = document.getElementById('vehicleNumberFeedback');
+    
+    // Update input styling
+    input.classList.remove('validation-valid', 'validation-invalid');
+    if (type === 'success') {
+        input.classList.add('validation-valid');
+        feedback.classList.add('feedback-valid');
+        feedback.classList.remove('feedback-invalid', 'hidden');
+    } else if (type === 'error') {
+        input.classList.add('validation-invalid');
+        feedback.classList.add('feedback-invalid');
+        feedback.classList.remove('feedback-valid', 'hidden');
+    }
+    
+    feedback.textContent = message;
+    feedback.classList.remove('hidden');
+}
+
+function clearFeedback(input) {
+    input.classList.remove('validation-valid', 'validation-invalid');
+    const feedback = document.getElementById('vehicleNumberFeedback');
+    feedback.classList.add('hidden');
+}
+
+// Update submit button state based on validation
+function updateSubmitButtonState(input) {
+    const submitButton = document.getElementById('submitButton');
+    const validation = validateVehicleNumber(input.value);
+    
+    if (input.value.trim() === '' || !validation.isValid) {
+        submitButton.disabled = true;
+    } else {
+        submitButton.disabled = false;
+    }
+}
+
+// Real-time vehicle status checking
+document.addEventListener('DOMContentLoaded', function() {
+    const vehicleInput = document.querySelector('input[name="vehicle_number"]');
+    let checkTimeout;
+    
+    if (vehicleInput) {
+        vehicleInput.addEventListener('input', function() {
+            const vehicleNumber = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(checkTimeout);
+            
+            // Wait for user to stop typing (500ms delay)
+            checkTimeout = setTimeout(async () => {
+                if (vehicleNumber && validateVehicleNumber(vehicleNumber).isValid) {
+                    try {
+                        const vehicleStatus = await checkVehicleStatus(vehicleNumber);
+                        
+                        if (vehicleStatus.is_parked) {
+                            showFeedback(vehicleInput, 'warning', `⚠️ ${vehicleStatus.message}`);
+                        }
+                    } catch (error) {
+                        // Silently fail - this is just a nice-to-have feature
+                    }
+                }
+            }, 500);
+        });
+        
+        // Clear message when switching to exit
+        document.querySelectorAll('input[name="action"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'exit') {
+                    clearFeedback(vehicleInput);
+                }
+            });
+        });
+    }
+});
+
+// Add this function to check if vehicle is already parked
+async function checkVehicleStatus(vehicleNumber) {
+    try {
+        const response = await fetch(`/check-vehicle-status/?vehicle_number=${encodeURIComponent(vehicleNumber)}`);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error checking vehicle status:', error);
+        return { is_parked: false };
+    }
+}
+
+// Add this function to validate form before submission
+async function validateFormBeforeSubmit(vehicleNumber, action) {
+    // First validate format
+    const formatValidation = validateVehicleNumber(vehicleNumber);
+    if (!formatValidation.isValid) {
+        return {
+            isValid: false,
+            message: formatValidation.message
+        };
+    }
+    
+    if (action === 'entry') {
+        const vehicleStatus = await checkVehicleStatus(vehicleNumber);
+        
+        if (vehicleStatus.is_parked) {
+            return {
+                isValid: false,
+                message: `Vehicle ${vehicleNumber} is already parked. Please exit the vehicle first.`
+            };
+        }
+    }
+    
+    return { isValid: true };
+}
+
+// Generate a unique ticket ID
+function generateTicketId() {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `T${timestamp}${random}`;
+}
+
+// Generate a receipt number
+function generateReceiptNumber() {
+    const timestamp = Date.now().toString().slice(-6);
+    return `R${timestamp}.2`;
+}
+
+// Update current time display
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { 
+        hour12: true, 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const dateString = now.toLocaleDateString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+    
+    document.getElementById('currentTimeDisplay').textContent = `${dateString} ${timeString}`;
+    
+    // Also update the hidden timestamp input in ISO format
+    document.getElementById('timestampInput').value = now.toISOString();
+}
+
+// Show result modal
+function showResultModal(isSuccess, title, message) {
+    const modal = document.getElementById('resultModal');
+    const icon = document.getElementById('resultIcon');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultMessage = document.getElementById('resultMessage');
+    
+    if (isSuccess) {
+        icon.innerHTML = '✅';
+        resultTitle.textContent = title;
+        resultTitle.className = 'text-xl font-bold mb-2 text-green-600';
+    } else {
+        icon.innerHTML = '❌';
+        resultTitle.textContent = title;
+        resultTitle.className = 'text-xl font-bold mb-2 text-red-600';
+    }
+    
+    resultMessage.textContent = message;
+    modal.classList.remove('hidden');
+}
+
+// Close result modal
+function closeResultModal() {
+    document.getElementById('resultModal').classList.add('hidden');
+}
+
+// Show receipt with data
+function showReceipt(data) {
+    console.log('Showing receipt with data:', data);
+    
+    // Generate IDs if not provided
+    const ticketId = data.ticket_id || generateTicketId();
+    const receiptNumber = data.receipt_number || generateReceiptNumber();
+    
+    // Update receipt display
+    document.getElementById('receiptNumberDisplay').textContent = receiptNumber;
+    document.getElementById('receiptVehicleNumber').textContent = data.vehicle_number;
+    document.getElementById('receiptTicketId').textContent = ticketId;
+    
+    // Update receipt date and time
+    const now = new Date();
+    const dateString = now.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+    const timeString = now.toLocaleTimeString('en-US', { 
+        hour12: true, 
+        hour: 'numeric', 
+        minute: '2-digit'
+    });
+    document.getElementById('receiptDateDisplay').textContent = `${dateString}, ${timeString}`;
+    document.getElementById('receiptEntryTime').textContent = `${dateString} ${timeString}`;
+    
+    // Store data for later use
+    document.getElementById('receiptSection').dataset.ticketId = ticketId;
+    document.getElementById('receiptSection').dataset.receiptNumber = receiptNumber;
+    
+    document.getElementById('receiptSection').classList.remove('hidden');
+    document.getElementById('receiptSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeReceipt() {
+    document.getElementById('receiptSection').classList.add('hidden');
+}
+
+function printReceipt() {
+    const receiptContent = document.getElementById('receiptContent').cloneNode(true);
+    
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank', 'width=300,height=400');
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Receipt</title>
+            <style>
+                body {
+                    font-family: 'Courier New', monospace;
+                    font-size: 9pt;
+                    margin: 0;
+                    padding: 2mm;
+                    width: 80mm;
+                    box-sizing: border-box;
+                }
+                .text-center { text-align: center; }
+                .font-bold { font-weight: bold; }
+                .border-t { border-top: 1px dashed #000; }
+                .my-1 { margin-top: 2px; margin-bottom: 2px; }
+                .mb-1 { margin-bottom: 2px; }
+                .mt-2 { margin-top: 4px; }
+                .flex { display: flex; }
+                .justify-between { justify-content: space-between; }
+                img {
+                    width: 25mm !important;
+                    height: 25mm !important;
+                    max-width: 25mm !important;
+                    max-height: 25mm !important;
+                }
+                #receiptContent {
+                    width: 80mm !important;
+                    max-width: 80mm !important;
+                }
+            </style>
+        </head>
+        <body>
+            ${receiptContent.innerHTML}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Wait for content to load then print
+    setTimeout(() => {
+        printWindow.print();
+        // printWindow.close(); // Uncomment if you want to automatically close after printing
+    }, 250);
+}
+
+function downloadReceiptPDF() {
+    // Check if jsPDF is available
+    if (typeof jsPDF !== 'undefined') {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [80, 120] // Small receipt format
+        });
+        
+        const ticketId = document.getElementById('receiptSection').dataset.ticketId;
+        const receiptNumber = document.getElementById('receiptSection').dataset.receiptNumber;
+        const vehicleNumber = document.getElementById('receiptVehicleNumber').textContent;
+        const entryTime = document.getElementById('receiptEntryTime').textContent;
+        
+        // Set receipt dimensions (small thermal receipt size)
+        const receiptWidth = 76;
+        const receiptHeight = 110;
+        const startX = 2;
+        const startY = 2;
+        
+        // Add border
+        doc.rect(startX, startY, receiptWidth, receiptHeight);
+        
+        // Add content to PDF
+        doc.setFontSize(12);
+        doc.text('BikePark Manager', startX + receiptWidth/2, startY + 6, { align: 'center' });
+        
+        doc.setFontSize(8);
+        doc.text('iPad7/14670-Manager', startX + receiptWidth/2, startY + 10, { align: 'center' });
+        
+        doc.setFontSize(8);
+        doc.text(`Receipt ${receiptNumber}`, startX + 3, startY + 16);
+        doc.text(entryTime, startX + receiptWidth - 3, startY + 16, { align: 'right' });
+        
+        // Horizontal line
+        doc.line(startX + 3, startY + 19, startX + receiptWidth - 3, startY + 19);
+        
+        // Vehicle details
+        doc.text(`Vehicle: ${vehicleNumber}`, startX + 3, startY + 25);
+        doc.text(`Ticket ID: ${ticketId}`, startX + 3, startY + 30);
+        doc.text(`Entry: ${entryTime}`, startX + 3, startY + 35);
+        
+        // QR code placeholder
+        doc.rect(startX + receiptWidth - 30, startY + 22, 25, 25);
+        doc.setFontSize(6);
+        doc.text('QR Code', startX + receiptWidth - 17.5, startY + 40, { align: 'center' });
+        
+        // Horizontal line
+        doc.line(startX + 3, startY + 47, startX + receiptWidth - 3, startY + 47);
+        
+        // Parking fee
+        doc.setFontSize(8);
+        doc.text('Parking Fee', startX + 3, startY + 53);
+        doc.text('PKR 20', startX + receiptWidth - 3, startY + 53, { align: 'right' });
+        
+        // Horizontal line
+        doc.line(startX + 3, startY + 57, startX + receiptWidth - 3, startY + 57);
+        
+        // Footer
+        doc.setFontSize(7);
+        doc.text('VAT:123456', startX + receiptWidth/2, startY + 63, { align: 'center' });
+        doc.text('Thank you for your patronage!', startX + receiptWidth/2, startY + 68, { align: 'center' });
+        
+        doc.text('Lightspeed (K) 23.19.1.9993', startX + receiptWidth/2, startY + 75, { align: 'center' });
+        
+        // Save the PDF
+        doc.save(`receipt-${ticketId}.pdf`);
+    } else {
+        // Fallback: alert the user to include jsPDF or use server-side PDF generation
+        alert('PDF download requires jsPDF library. For now, please use the print function.');
+    }
+}
+
+// Form submission handling
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('manualEntryForm');
+    
+    if (!form) {
+        console.error('Form not found!');
+        return;
+    }
+    
+    // Initialize time display
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
+    
+    // Initialize submit button state
+    const vehicleInput = form.querySelector('input[name="vehicle_number"]');
+    updateSubmitButtonState(vehicleInput);
+    
+    form.addEventListener('submit', async function(e) {
+        // Prevent default form submission
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('Form submission intercepted');
+        
+        const formData = new FormData(this);
+        const submitButton = document.getElementById('submitButton');
+        const vehicleNumber = formData.get('vehicle_number').trim();
+        const action = formData.get('action');
+        
+        // Strict validation - if not valid, don't proceed
+        const validation = validateVehicleNumber(vehicleNumber);
+        if (!validation.isValid) {
+            showResultModal(false, 'Invalid Vehicle Number', validation.message);
+            return;
+        }
+        
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.textContent = action === 'entry' ? 'Processing Entry...' : 'Processing Exit...';
+        submitButton.classList.add('pulse-animation');
+        
+        try {
+            // Validate if vehicle is already parked (for entry only)
+            if (action === 'entry') {
+                const preValidation = await validateFormBeforeSubmit(vehicleNumber, action);
+                if (!preValidation.isValid) {
+                    showResultModal(false, 'Vehicle Already Parked', preValidation.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Record Entry/Exit';
+                    submitButton.classList.remove('pulse-animation');
+                    return;
+                }
+            }
+            
+            // Update form data with cleaned vehicle number
+            formData.set('vehicle_number', validation.cleanedValue);
+            
+            // Make the actual API call to your backend
+            const response = await fetch("{% url 'admin_manual_entry' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            });
+            
+            console.log('Response received, status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Parsed JSON data:', data);
+            
+            if (data.status === 'success') {
+                if (action === 'entry') {
+                    // Show receipt for entry actions with actual data from backend
+                    showReceipt({
+                        receipt_number: data.receipt_number || generateReceiptNumber(),
+                        vehicle_number: validation.cleanedValue,
+                        ticket_id: data.ticket_id || generateTicketId()
+                    });
+                    
+                    // Show success message
+                    showResultModal(true, 'Entry Recorded', data.message);
+                    
+                } else {
+                    // For exit actions, just show success message without reloading
+                    showResultModal(true, 'Exit Recorded', data.message);
+                    
+                    // Update the recent activity section dynamically instead of reloading
+                    updateRecentActivity(validation.cleanedValue, 'exited');
+                }
+                
+                // Reset form (but keep the current time)
+                form.reset();
+                // Reset action to entry
+                form.querySelector('input[name="action"][value="entry"]').checked = true;
+                updateCurrentTime();
+                clearFeedback(vehicleInput);
+                updateSubmitButtonState(vehicleInput);
+                
+            } else {
+                // Show error modal
+                showResultModal(false, 'Error', data.message || 'An error occurred');
+            }
+            
+        } catch (error) {
+            console.error('Fetch error:', error);
+            showResultModal(false, 'Error', 'Failed to process request: ' + error.message);
+        } finally {
+            // Reset button state
+            submitButton.disabled = false;
+            submitButton.textContent = 'Record Entry/Exit';
+            submitButton.classList.remove('pulse-animation');
+        }
+    });
+});
+
+// Function to update recent activity section dynamically
+function updateRecentActivity(vehicleNumber, action) {
+    const recentActivityContainer = document.querySelector('.space-y-4');
+    const emptyState = recentActivityContainer.querySelector('.text-center');
+    
+    // Remove empty state if it exists
+    if (emptyState && emptyState.querySelector('.text-gray-500')) {
+        emptyState.remove();
+    }
+    
+    // Create new activity entry
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { 
+        hour12: true, 
+        hour: '2-digit', 
+        minute: '2-digit'
+    });
+    
+    const activityHTML = `
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="font-semibold text-gray-800 text-lg">${vehicleNumber}</p>
+                    <p class="text-sm text-gray-600">${timeString}</p>
+                </div>
+                <span class="${action === 'entered' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} px-3 py-1 rounded-full text-sm font-medium">
+                    ${action === 'entered' ? 'Entered' : 'Exited'}
+                </span>
+            </div>
+        </div>
+    `;
+    
+    // Add new entry at the top
+    recentActivityContainer.insertAdjacentHTML('afterbegin', activityHTML);
+}
+
+// Close modal when clicking outside
+document.getElementById('resultModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeResultModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeResultModal();
+        closeReceipt();
+    }
+});
+// Close modal when clicking outside
+document.getElementById('resultModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeResultModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeResultModal();
+        closeReceipt();
+    }
+});
+</script>
+
+<!-- Include jsPDF for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+{% endblock %}

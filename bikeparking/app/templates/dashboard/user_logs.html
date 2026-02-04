@@ -1,0 +1,1267 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load system_filters %}
+
+{% block title %}System Logs - Admin Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+
+
+/* Container fixes */
+.container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Main content wrapper */
+.content-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Custom scrollbar for table */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0;
+    padding: 0;
+}
+
+.table-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Compact table styling */
+.compact-table {
+    width: 100%;
+    min-width: 800px; /* Minimum width before scrolling */
+    table-layout: fixed; /* Fixed layout for better control */
+    border-collapse: collapse;
+}
+
+/* Column widths - VERY COMPACT */
+.compact-table th:nth-child(1),
+.compact-table td:nth-child(1) {
+    width: 120px; /* Time */
+    min-width: 120px;
+    max-width: 120px;
+}
+
+.compact-table th:nth-child(2),
+.compact-table td:nth-child(2) {
+    width: 100px; /* Event Type */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.compact-table th:nth-child(3),
+.compact-table td:nth-child(3) {
+    width: 80px; /* Severity */
+    min-width: 80px;
+    max-width: 80px;
+}
+
+.compact-table th:nth-child(4),
+.compact-table td:nth-child(4) {
+    width: 140px; /* User / IP */
+    min-width: 140px;
+    max-width: 140px;
+}
+
+.compact-table th:nth-child(5),
+.compact-table td:nth-child(5) {
+    width: 180px; /* Action */
+    min-width: 180px;
+    max-width: 180px;
+}
+
+.compact-table th:nth-child(6),
+.compact-table td:nth-child(6) {
+    width: 200px; /* Details */
+    min-width: 200px;
+    max-width: 200px;
+}
+
+.compact-table th:nth-child(7),
+.compact-table td:nth-child(7) {
+    width: 80px; /* Actions */
+    min-width: 80px;
+    max-width: 80px;
+}
+
+/* Table cell styling */
+.compact-table th,
+.compact-table td {
+    padding: 8px 12px !important;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* Table header */
+.compact-table thead th {
+    background-color: #f9fafb;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Table body */
+.compact-table tbody td {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+/* Hover effects */
+.compact-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Material Icons alignment */
+.material-icons {
+    vertical-align: middle;
+    font-size: 16px;
+}
+
+/* Badge styles - Compact */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    line-height: 1;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+/* Event type badge colors */
+.badge-auth { background-color: #dbeafe; color: #1e40af; }
+.badge-security { background-color: #fee2e2; color: #991b1b; }
+.badge-system { background-color: #f3f4f6; color: #374151; }
+.badge-admin { background-color: #fef3c7; color: #92400e; }
+.badge-database { background-color: #d1fae5; color: #065f46; }
+.badge-performance { background-color: #fce7f3; color: #9d174d; }
+.badge-integration { background-color: #e0e7ff; color: #3730a3; }
+.badge-application { background-color: #c7d2fe; color: #3730a3; }
+
+/* Severity colors */
+.severity-critical { color: #dc2626; font-weight: bold; font-size: 0.8rem; }
+.severity-error { color: #ef4444; font-size: 0.8rem; }
+.severity-warning { color: #f59e0b; font-size: 0.8rem; }
+.severity-info { color: #3b82f6; font-size: 0.8rem; }
+
+/* Responsive container */
+.responsive-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+    .responsive-container {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .responsive-container {
+        padding: 0 2rem;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .compact-table {
+        min-width: 700px;
+    }
+    
+    .compact-table th:nth-child(1),
+    .compact-table td:nth-child(1) {
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
+    }
+    
+    .compact-table th:nth-child(2),
+    .compact-table td:nth-child(2) {
+        width: 80px;
+        min-width: 80px;
+        max-width: 80px;
+    }
+    
+    .compact-table th:nth-child(3),
+    .compact-table td:nth-child(3) {
+        width: 70px;
+        min-width: 70px;
+        max-width: 70px;
+    }
+    
+    .compact-table th:nth-child(4),
+    .compact-table td:nth-child(4) {
+        width: 120px;
+        min-width: 120px;
+        max-width: 120px;
+    }
+    
+    .compact-table th:nth-child(5),
+    .compact-table td:nth-child(5) {
+        width: 150px;
+        min-width: 150px;
+        max-width: 150px;
+    }
+    
+    .compact-table th:nth-child(6),
+    .compact-table td:nth-child(6) {
+        width: 160px;
+        min-width: 160px;
+        max-width: 160px;
+    }
+    
+    .compact-table th,
+    .compact-table td {
+        padding: 6px 8px !important;
+        font-size: 0.75rem;
+    }
+    
+    .badge {
+        padding: 1px 6px;
+        font-size: 0.65rem;
+    }
+    
+    .material-icons {
+        font-size: 14px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    .compact-table {
+        min-width: 600px;
+    }
+    
+    .responsive-container {
+        padding: 0 0.5rem;
+    }
+}
+
+/* Text truncation utilities */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.max-lines-1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.max-lines-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Card styles */
+.card {
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Button styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Form controls */
+.form-control {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Spacing utilities */
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mx-0 { margin-left: 0; margin-right: 0; }
+.px-0 { padding-left: 0; padding-right: 0; }
+</style>
+
+<div class="space-y-6 mx-0 px-0">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="w-full sm:w-auto">
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">
+                <i class="material-icons align-middle mr-2">monitor</i>
+                System Logs
+            </h1>
+            <p class="text-gray-600 mt-1 text-sm sm:text-base">Monitor system-wide events and activities</p>
+        </div>
+        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+            <a href="{% url 'export_system_logs_csv' %}" 
+               class="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                <i class="material-icons text-sm mr-2">file_download</i>
+                Export CSV
+            </a>
+            <button type="button" 
+                    class="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                    onclick="showClearLogsModal()">
+                <i class="material-icons text-sm mr-2">delete</i>
+                Clear Logs
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Logs Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Logs</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">{{ total_logs }}</p>
+                </div>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-blue-600 text-base sm:text-lg">storage</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Logs Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Today's Logs</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">{{ today_logs }}</p>
+                </div>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-green-600 text-base sm:text-lg">today</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Errors & Warnings Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Errors Today</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">{{ error_logs }}</p>
+                </div>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-red-600 text-base sm:text-lg">warning</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Users Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Unique Users</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">{{ unique_users }}</p>
+                </div>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-purple-600 text-base sm:text-lg">people</i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+        <div class="p-4 sm:p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base sm:text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2">filter_list</i>
+                    Filter System Logs
+                </h2>
+                
+            </div>
+        </div>
+        
+        <div class="p-4 sm:p-6" id="filterSection">
+            <form method="get" id="filterForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <!-- Search Input -->
+                    <div class="md:col-span-2 lg:col-span-1">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                            Search
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            </div>
+                            <input type="text" 
+                                   name="search" 
+                                   id="searchInput"
+                                   value="{{ search_query }}"
+                                   placeholder="Username, action, IP..."
+                                   class="pl-10 w-full px-3 py-2 sm:px-4 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                        </div>
+                    </div>
+
+                    <!-- User Filter -->
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                            User
+                        </label>
+                        <select name="user_id" class="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                            <option value="">All Users</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.id }}" {% if selected_user == user.id|stringformat:"s" %}selected{% endif %}>
+                                {{ user.get_full_name|default:user.username|truncatechars:20 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Date From -->
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                            Date From
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            </div>
+                            <input type="date" 
+                                   name="date_from" 
+                                   id="dateFrom"
+                                   value="{{ date_from }}"
+                                   class="pl-10 w-full px-3 py-2 sm:px-4 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                        </div>
+                    </div>
+
+                    <!-- Date To -->
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                            Date To
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            </div>
+                            <input type="date" 
+                                   name="date_to" 
+                                   id="dateTo"
+                                   value="{{ date_to }}"
+                                   class="pl-10 w-full px-3 py-2 sm:px-4 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 sm:gap-3 pt-3 sm:pt-4">
+                    <button type="submit" 
+                            class="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="material-icons text-sm mr-2">filter_alt</i>
+                        Apply Filters
+                    </button>
+                    <a href="{% url 'user_logs' %}"
+                            class="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                        <i class="material-icons text-sm mr-2">clear</i>
+                        Clear Filters
+                </a>
+                    
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- System Logs Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+        <div class="p-4 sm:p-6 border-b border-gray-200">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-semibold text-gray-900">
+                        <i class="material-icons align-middle mr-2">list_alt</i>
+                        System Event Logs
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-600 mt-1">
+                        Showing <span class="font-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> 
+                        of <span class="font-semibold">{{ page_obj.paginator.count }}</span> records
+                    </p>
+                </div>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <span class="px-2 py-1 sm:px-3 sm:py-1 bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium rounded-full">
+                        {{ page_obj.paginator.count }}
+                    </span>
+                    <div class="relative">
+                        <button class="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                type="button" 
+                                id="optionsDropdown">
+                            <i class="material-icons text-base">more_vert</i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10 hidden" id="dropdownMenu">
+                            <a href="#" 
+                               onclick="refreshPage()"
+                               class="flex items-center px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg transition-colors duration-200">
+                                <i class="material-icons text-xs sm:text-sm mr-2 sm:mr-3">refresh</i>
+                                Refresh
+                            </a>
+                            <a href="{% url 'export_system_logs_csv' %}" 
+                               class="flex items-center px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                                <i class="material-icons text-xs sm:text-sm mr-2 sm:mr-3">file_download</i>
+                                Export Data
+                            </a>
+                            <div class="border-t border-gray-200"></div>
+                            <a href="#" 
+                               onclick="showClearLogsModal()"
+                               class="flex items-center px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition-colors duration-200">
+                                <i class="material-icons text-xs sm:text-sm mr-2 sm:mr-3">delete</i>
+                                Clear Logs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-1 sm:mr-2 text-xs">schedule</i>
+                            Time
+                        </th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-1 sm:mr-2 text-xs">category</i>
+                            Event Type
+                        </th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-1 sm:mr-2 text-xs">priority_high</i>
+                            Severity
+                        </th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-1 sm:mr-2 text-xs">person</i>
+                            User / IP
+                        </th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider action-cell">
+                            <i class="material-icons align-middle mr-1 sm:mr-2 text-xs">flash_on</i>
+                            Action
+                        </th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider details-cell">
+                            <i class="material-icons align-middle mr-1 sm:mr-2 text-xs">description</i>
+                            Details
+                        </th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-1 sm:mr-2 text-xs">settings</i>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for log in page_obj %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+                            <div class="text-xs sm:text-sm font-medium text-gray-900">
+                                {{ log.timestamp|date:"Y-m-d" }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ log.timestamp|date:"H:i:s" }}
+                            </div>
+                        </td>
+                        <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+                            <span class="badge badge-{{ log|get_event_type }} text-xs">
+                                {{ log|get_event_type|title|truncatechars:12 }}
+                            </span>
+                        </td>
+                        <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+                            <span class="severity-{{ log|get_severity }} font-medium text-xs sm:text-sm">
+                                <i class="material-icons text-xs mr-1">
+                                    {% if log|get_severity == 'critical' %}error
+                                    {% elif log|get_severity == 'error' %}warning
+                                    {% elif log|get_severity == 'warning' %}warning
+                                    {% else %}info{% endif %}
+                                </i>
+                                {{ log|get_severity|title|truncatechars:8 }}
+                            </span>
+                        </td>
+                        <td class="px-3 sm:px-6 py-4 whitespace-nowrap truncate-cell">
+                            <div class="text-xs sm:text-sm text-gray-900">
+                                {% if log.user %}
+                                    {{ log.user.get_full_name|default:log.user.username|truncatechars:15 }}
+                                {% else %}
+                                    Anonymous
+                                {% endif %}
+                            </div>
+                            <div class="text-xs text-gray-500 font-mono truncate">
+                                {{ log.ip_address|default:"N/A"|truncatechars:15 }}
+                            </div>
+                        </td>
+                        <td class="px-3 sm:px-6 py-4 whitespace-nowrap truncate-cell action-cell">
+                            <div class="text-xs sm:text-sm text-gray-900 font-medium truncate" title="{{ log.action }}">
+                                {{ log.action|truncatechars:30 }}
+                            </div>
+                        </td>
+                        <td class="px-3 sm:px-6 py-4 truncate-cell details-cell">
+                            <div class="text-xs sm:text-sm text-gray-900 truncate" title="{{ log.details|default:'No details' }}">
+                                {{ log.details|default:"No details"|truncatechars:50 }}
+                            </div>
+                            {% if log.user_agent %}
+                            <div class="text-xs text-gray-500 mt-1 truncate" title="{{ log.user_agent }}">
+                                {{ log.user_agent|truncatechars:30 }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                            <div class="flex space-x-1 sm:space-x-2">
+                                <button type="button" 
+                                        onclick="showLogDetails(
+                                            '{{ log.id }}',
+                                            '{% if log.user %}{{ log.user.get_full_name|default:log.user.username|escapejs }}{% else %}Anonymous{% endif %}',
+                                            '{% if log.user %}{{ log.user.username|escapejs }}{% else %}{% endif %}',
+                                            '{{ log.action|escapejs }}',
+                                            '{{ log.timestamp|date:"c" }}',
+                                            '{{ log.details|escapejs }}',
+                                            '{{ log.ip_address|default:""|escapejs }}',
+                                            '{{ log.user_agent|default:""|escapejs }}'
+                                        );"
+                                        class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors duration-200"
+                                        title="View Details">
+                                    <i class="material-icons text-xs">visibility</i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-3 sm:px-6 py-8 sm:py-12 text-center">
+                            <div class="w-16 h-16 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                <i class="material-icons text-gray-400 text-xl sm:text-3xl">monitor</i>
+                            </div>
+                            <h3 class="text-sm sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">No system logs found</h3>
+                            <p class="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-6">Try adjusting your filters or check back later</p>
+                            <button onclick="clearFilters()"
+                                    class="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                                <i class="material-icons text-xs sm:text-sm mr-2">clear</i>
+                                Clear All Filters
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0">
+                <div class="text-xs sm:text-sm text-gray-600">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <div class="flex items-center space-x-1 sm:space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_user %}&user_id={{ selected_user }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                       class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                       title="First Page">
+                        <i class="material-icons text-xs sm:text-sm">first_page</i>
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_user %}&user_id={{ selected_user }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                       class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                       title="Previous Page">
+                        <i class="material-icons text-xs sm:text-sm">chevron_left</i>
+                    </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-2 border border-blue-500 text-xs sm:text-sm font-medium rounded-lg text-white bg-blue-600">
+                            {{ num }}
+                        </span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_user %}&user_id={{ selected_user }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                           class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_user %}&user_id={{ selected_user }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                       class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                       title="Next Page">
+                        <i class="material-icons text-xs sm:text-sm">chevron_right</i>
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_user %}&user_id={{ selected_user }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                       class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                       title="Last Page">
+                        <i class="material-icons text-xs sm:text-sm">last_page</i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <!-- Event Type Distribution -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 class="text-sm sm:text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2 text-sm">pie_chart</i>
+                    Event Type Distribution
+                </h3>
+            </div>
+            <div class="p-3 sm:p-6">
+                <div class="space-y-3 sm:space-y-4">
+                    {% for event in event_distribution %}
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="material-icons mr-2 sm:mr-3 text-sm
+                                {% if event.event_type == 'auth' %}text-blue-500
+                                {% elif event.event_type == 'security' %}text-red-500
+                                {% elif event.event_type == 'system' %}text-gray-500
+                                {% elif event.event_type == 'admin' %}text-yellow-500
+                                {% elif event.event_type == 'database' %}text-green-500
+                                {% elif event.event_type == 'performance' %}text-pink-500
+                                {% elif event.event_type == 'integration' %}text-purple-500
+                                {% else %}text-indigo-500{% endif %}">
+                                {% if event.event_type == 'auth' %}lock
+                                {% elif event.event_type == 'security' %}security
+                                {% elif event.event_type == 'system' %}settings
+                                {% elif event.event_type == 'admin' %}admin_panel_settings
+                                {% elif event.event_type == 'database' %}storage
+                                {% elif event.event_type == 'performance' %}speed
+                                {% elif event.event_type == 'integration' %}integration_instructions
+                                {% else %}apps{% endif %}
+                            </i>
+                            <span class="text-xs sm:text-sm font-medium text-gray-700">{{ event.event_type|title }}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 sm:space-x-4">
+                            <span class="text-xs sm:text-sm font-medium text-gray-900">{{ event.count }}</span>
+                            <div class="w-20 sm:w-32 bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full 
+                                    {% if event.event_type == 'auth' %}bg-blue-500
+                                    {% elif event.event_type == 'security' %}bg-red-500
+                                    {% elif event.event_type == 'system' %}bg-gray-500
+                                    {% elif event.event_type == 'admin' %}bg-yellow-500
+                                    {% elif event.event_type == 'database' %}bg-green-500
+                                    {% elif event.event_type == 'performance' %}bg-pink-500
+                                    {% elif event.event_type == 'integration' %}bg-purple-500
+                                    {% else %}bg-indigo-500{% endif %}" 
+                                     style="width: '{% widthratio event.count total_logs 100 %}%';">
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500 w-8 sm:w-10 text-right">
+                                {% widthratio event.count total_logs 100 %}%
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 sm:py-8">
+                        <p class="text-xs sm:text-sm text-gray-500">No data available</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 class="text-sm sm:text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2 text-sm">bolt</i>
+                    Quick Actions
+                </h3>
+            </div>
+            <div class="p-3 sm:p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <!-- Export Data Card -->
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-3 sm:p-5 hover:shadow-sm transition-shadow duration-200">
+                        <div class="text-center">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                                <i class="material-icons text-white text-base sm:text-lg">file_download</i>
+                            </div>
+                            <h4 class="text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Export Data</h4>
+                            <p class="text-xs text-gray-600 mb-2 sm:mb-4">Export all system logs to CSV format</p>
+                            <a href="{% url 'export_system_logs_csv' %}"
+                               class="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                                Export Now
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Clean Up Card -->
+                    <div class="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl p-3 sm:p-5 hover:shadow-sm transition-shadow duration-200">
+                        <div class="text-center">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-lg flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                                <i class="material-icons text-white text-base sm:text-lg">delete</i>
+                            </div>
+                            <h4 class="text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Clean Up</h4>
+                            <p class="text-xs text-gray-600 mb-2 sm:mb-4">Remove old system logs</p>
+                            <button onclick="showClearLogsModal()"
+                                    class="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-red-600 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                                Clear Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// JavaScript functions for the system logs page
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh logs every 60 seconds
+    setInterval(function () {
+        if (!document.hidden && !document.getElementById('filterSection')?.classList.contains('hidden')) {
+            refreshPage();
+        }
+    }, 60000);
+    
+    // Initialize dropdown
+    const dropdownButton = document.getElementById('optionsDropdown');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    
+    if (dropdownButton && dropdownMenu) {
+        dropdownButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            dropdownMenu.classList.add('hidden');
+        });
+    }
+    
+    // Search with debounce
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                document.getElementById('filterForm').submit();
+            }, 500);
+        });
+    }
+    
+    // Auto-submit for filters
+    const autoSubmitElements = document.querySelectorAll(
+        'select[name="user_id"], input[name="date_from"], input[name="date_to"]'
+    );
+    
+    autoSubmitElements.forEach(element => {
+        element.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    });
+});
+
+function refreshPage() {
+    const form = document.getElementById('filterForm');
+    if (form) {
+        form.submit();
+    }
+}
+
+function toggleFilters() {
+    const filterSection = document.getElementById('filterSection');
+    if (filterSection) {
+        filterSection.classList.toggle('hidden');
+    }
+}
+
+function clearFilters() {
+    const form = document.getElementById('filterForm');
+    if (form) {
+        // Reset all form inputs
+        form.reset();
+        
+        // Clear specific inputs
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        const searchInput = document.getElementById('searchInput');
+        
+        if (dateFrom) dateFrom.value = '';
+        if (dateTo) dateTo.value = '';
+        if (searchInput) searchInput.value = '';
+        
+        // Submit the form
+        form.submit();
+    }
+}
+
+function setToday() {
+    const today = new Date().toISOString().split('T')[0];
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    
+    if (dateFrom) dateFrom.value = today;
+    if (dateTo) dateTo.value = today;
+    
+    document.getElementById('filterForm').submit();
+}
+
+function setLast7Days() {
+    const today = new Date();
+    const last7 = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
+    
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    
+    if (dateFrom) dateFrom.value = last7.toISOString().split('T')[0];
+    if (dateTo) dateTo.value = today.toISOString().split('T')[0];
+    
+    document.getElementById('filterForm').submit();
+}
+
+function showClearLogsModal() {
+    // Create clear logs modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-4 sm:top-10 md:top-20 mx-auto p-4 sm:p-5 border w-11/12 sm:w-96 shadow-lg rounded-xl bg-white max-h-screen overflow-y-auto">
+            <div class="flex items-center mb-4 sm:mb-6">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3 sm:mr-4">
+                    <i class="material-icons text-red-600 text-sm sm:text-base">warning</i>
+                </div>
+                <div>
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Clear Old System Logs</h3>
+                    <p class="text-xs sm:text-sm text-gray-600">Permanent deletion</p>
+                </div>
+            </div>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+                <div class="flex">
+                    <i class="material-icons text-red-500 mr-2 sm:mr-3 text-sm">warning</i>
+                    <div>
+                        <h4 class="font-medium text-red-800 mb-1 text-sm">Warning!</h4>
+                        <p class="text-xs sm:text-sm text-red-700">This action will permanently delete system logs older than the specified number of days.</p>
+                        <p class="text-xs sm:text-sm text-red-700 font-medium mt-1 sm:mt-2">This action cannot be undone.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="post" action="{% url 'clear_old_system_logs' %}" id="clearLogsForm" class="space-y-3 sm:space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="days" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                        Delete logs older than (days):
+                    </label>
+                    <select class="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200"
+                            id="days" name="days" required>
+                        <option value="7">7 days</option>
+                        <option value="30" selected>30 days</option>
+                        <option value="60">60 days</option>
+                        <option value="90">90 days</option>
+                        <option value="180">180 days</option>
+                        <option value="365">1 year</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1 sm:mt-2">Logs older than this will be permanently deleted.</p>
+                </div>
+                
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
+                    <div class="flex">
+                        <i class="material-icons text-yellow-500 mr-2 sm:mr-3 text-sm">info</i>
+                        <div>
+                            <p class="text-xs sm:text-sm text-yellow-700">
+                                <strong>Note:</strong> Approximately 
+                                <span id="estimatedCount" class="font-semibold">0</span> 
+                                logs will be affected.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                    <button type="button" 
+                            onclick="this.closest('.fixed').remove()"
+                            class="px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="button" 
+                            onclick="confirmClearLogs()"
+                            class="px-3 py-2 sm:px-4 sm:py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                        <i class="material-icons text-sm mr-2">delete</i>
+                        Delete Old Logs
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.remove();
+        }
+    });
+}
+
+function confirmClearLogs() {
+    const days = document.getElementById('days').value;
+    if (confirm(`Are you absolutely sure you want to delete logs older than ${days} days?\n\nThis action cannot be undone!`)) {
+        document.getElementById('clearLogsForm').submit();
+    }
+}
+
+function showLogDetails(logId, userName, username, action, timestamp, details, ipAddress, userAgent) {
+    // Create log details modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    
+    modal.innerHTML = `
+        <div class="relative top-4 sm:top-10 md:top-20 mx-auto p-4 sm:p-5 border w-11/12 max-w-4xl shadow-lg rounded-xl bg-white max-h-screen overflow-y-auto">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 sm:mr-4">
+                        <i class="material-icons text-blue-600 text-sm sm:text-base">info</i>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900">System Log Details - #${logId}</h3>
+                        <p class="text-xs sm:text-sm text-gray-600">Complete system event information</p>
+                    </div>
+                </div>
+                <button type="button" 
+                        onclick="this.closest('.fixed').remove()"
+                        class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <i class="material-icons text-base sm:text-lg">close</i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <!-- Basic Information -->
+                <div class="space-y-3 sm:space-y-4">
+                    <h4 class="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Basic Information
+                    </h4>
+                    <div class="space-y-2 sm:space-y-3">
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">Log ID</label>
+                            <p class="text-sm sm:text-base font-medium text-gray-900">#${logId}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">Timestamp</label>
+                            <p class="text-sm sm:text-base font-medium text-gray-900">${timestamp}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">Action</label>
+                            <p class="text-sm sm:text-base font-medium text-gray-900">${action}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">User</label>
+                            <p class="text-sm sm:text-base font-medium text-gray-900">${userName}</p>
+                            ${username ? `<p class="text-xs text-gray-500">@${username}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Information -->
+                <div class="space-y-3 sm:space-y-4">
+                    <h4 class="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Technical Information
+                    </h4>
+                    <div class="space-y-2 sm:space-y-3">
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">IP Address</label>
+                            <p class="text-sm sm:text-base font-medium text-gray-900 font-mono break-all">${ipAddress || 'N/A'}</p>
+                        </div>
+                        ${userAgent ? `
+                            <div>
+                                <label class="text-xs font-medium text-gray-500">User Agent</label>
+                                <p class="text-sm text-gray-900 text-xs sm:text-sm font-mono bg-gray-50 p-2 rounded break-all">${userAgent}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <!-- Details -->
+                <div class="md:col-span-2 space-y-3 sm:space-y-4">
+                    <h4 class="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Details
+                    </h4>
+                    <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-900 whitespace-pre-wrap break-words">${details || 'No details available'}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                <button type="button" 
+                        onclick="this.closest('.fixed').remove()"
+                        class="px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                    Close
+                </button>
+                <button type="button" 
+                        onclick="printLogDetails(${logId}, '${userName}', '@${username}', '${action}', '${timestamp}', '${details}', '${ipAddress}', '${userAgent}')"
+                        class="px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    <i class="material-icons text-sm mr-2">print</i>
+                    Print
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.remove();
+        }
+    });
+}
+
+function printLogDetails(logId, userName, username, action, timestamp, details, ipAddress, userAgent) {
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>System Log Details - #${logId}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .header h1 { color: #333; margin: 0; }
+                .header p { color: #666; margin: 5px 0 0 0; }
+                .section { margin-bottom: 25px; }
+                .section h2 { color: #555; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+                .info-row { display: flex; margin-bottom: 10px; }
+                .info-label { font-weight: bold; width: 150px; color: #555; }
+                .info-value { color: #333; }
+                .details-box { background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 15px 0; }
+                .tech-box { background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 15px 0; }
+                @media print {
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>System Log Details - #${logId}</h1>
+                <p>Generated on ${new Date().toLocaleString()}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Basic Information</h2>
+                <div class="info-row">
+                    <div class="info-label">Log ID:</div>
+                    <div class="info-value">#${logId}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Timestamp:</div>
+                    <div class="info-value">${timestamp}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Action:</div>
+                    <div class="info-value">${action}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">User:</div>
+                    <div class="info-value">${userName}</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Technical Information</h2>
+                <div class="tech-box">
+                    <div class="info-row">
+                        <div class="info-label">IP Address:</div>
+                        <div class="info-value">${ipAddress || 'N/A'}</div>
+                    </div>
+                    ${userAgent ? `
+                        <div class="info-row">
+                            <div class="info-label">User Agent:</div>
+                            <div class="info-value">${userAgent}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Details</h2>
+                <div class="details-box">
+                    ${details || 'No details available'}
+                </div>
+            </div>
+            
+            <div class="no-print" style="margin-top: 40px; text-align: center; font-size: 12px; color: #888;">
+                <p>This document was generated from BikeSecure System - System Logs</p>
+            </div>
+            
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() {
+                        window.close();
+                    }, 1000);
+                }
+            </script>
+        </body>
+        </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+}
+</script>
+{% endblock %}

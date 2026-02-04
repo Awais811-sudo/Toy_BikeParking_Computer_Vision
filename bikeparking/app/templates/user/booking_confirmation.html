@@ -1,0 +1,80 @@
+{% extends 'base1.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow p-6 max-w-2xl mx-auto">
+        <div class="text-center mb-6">
+            <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <h1 class="text-2xl font-bold mt-4">Booking Confirmed!</h1>
+            <p class="text-gray-600 mt-2">Your parking slot has been successfully reserved</p>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- Booking Details -->
+            <div class="border-b pb-4">
+                <h2 class="text-lg font-semibold mb-2">Booking Details</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-gray-600">Booking ID</p>
+                        <p class="font-medium">#{{ booking.id }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Vehicle</p>
+                        <p class="font-medium">{{ booking.vehicle_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Slot</p>
+                        <p class="font-medium">{{ booking.slot.slot_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Status</p>
+                        <p class="font-medium text-green-600">{{ booking.get_status_display }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Time Details -->
+            <div class="border-b pb-4">
+                <h2 class="text-lg font-semibold mb-2">Time Details</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-gray-600">Start Time</p>
+                        <p class="font-medium">{{ booking.start_time|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">End Time</p>
+                        <p class="font-medium">{{ booking.end_time|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Time Until Booking</p>
+                        <p class="font-medium">{{ hours_until }}h {{ mins_until }}m</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- QR Code -->
+            {% if qr_code_url %}
+            <div class="text-center py-4">
+                <h3 class="text-lg font-semibold mb-2">Your Booking QR Code</h3>
+                <img src="{{ qr_code_url }}" alt="Booking QR Code" class="mx-auto w-48 h-48">
+                <p class="text-sm text-gray-500 mt-2">Scan this code at the parking entrance</p>
+            </div>
+            {% endif %}
+            
+            <!-- Actions -->
+            <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <a href="{{ booking_slip_url }}" download 
+                   class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-center">
+                    Download Booking Slip
+                </a>
+                <a href="{% url 'home' %}" 
+                   class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md text-center">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

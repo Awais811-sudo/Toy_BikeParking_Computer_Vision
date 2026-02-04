@@ -1,0 +1,2265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Wheel Wise Vision - AI-Powered Bike Parking{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* === CSS Variables === */
+        :root {
+            --primary: #16a34a;
+            --secondary: #3f37c9;
+            --accent: #10b981;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --text: #495057;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --border-radius: 12px;
+        }
+
+        /* === Reset & Base Styles === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #fff;
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding-top: 80px; /* Account for fixed header */
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 80px 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 60px;
+            color: var(--dark);
+            position: relative;
+            font-weight: 700;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -15px;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* === Enhanced Header Styles === */
+        .main-header {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 12px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .main-header.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-logo {
+            color: black;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+            position: relative;
+            padding: 5px 0;
+            z-index: 1001;
+        }
+
+        .header-logo:hover {
+            color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .header-logo::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .header-logo:hover::after {
+            width: 100%;
+        }
+
+        .header-logo-icon {
+            font-size: 1.6rem;
+            color: var(--accent);
+            transition: var(--transition);
+        }
+
+        .header-logo:hover .header-logo-icon {
+            transform: rotate(15deg);
+            color: var(--secondary);
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+
+        .mobile-menu-toggle span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background-color: var(--primary);
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .header-nav-list {
+            display: flex;
+            gap: 1.2rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .header-nav-link {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-nav-link i {
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .header-nav-link:hover {
+            color: var(--primary);
+        }
+
+        .header-nav-link:hover i {
+            transform: scale(1.2);
+        }
+
+        .header-nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .header-nav-link:hover::after {
+            width: 100%;
+        }
+
+        .header-auth {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* Auth Button Styles */
+        .header-login-btn {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid transparent;
+        }
+
+        .header-login-btn:hover {
+            color: var(--primary);
+            background: rgba(40, 167, 69, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+        }
+
+        .header-register-btn {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .header-register-btn:hover {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        /* User Dropdown Styles */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid transparent;
+            transition: var(--transition);
+            cursor: pointer;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-menu-btn:hover {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 0.5rem 0;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: var(--transition);
+            z-index: 1000;
+            border: 1px solid #e9ecef;
+        }
+
+        .user-dropdown:hover .user-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem 1.2rem;
+            color: var(--text);
+            transition: var(--transition);
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .user-dropdown-item:hover {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--primary);
+        }
+
+        .user-dropdown-item i {
+            width: 16px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .user-dropdown-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 0.5rem 0;
+        }
+
+        .header-reserve-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-reserve-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .header-reserve-btn:hover::before {
+            left: 100%;
+        }
+
+        .header-reserve-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .header-reserve-icon {
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .header-reserve-btn:hover .header-reserve-icon {
+            transform: rotate(15deg);
+        }
+
+        /* Section Styles for Home Page */
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+            padding: 120px 0 80px;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 3rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        /* Page Content Styles for other pages */
+        .page-content {
+            min-height: calc(100vh - 200px);
+            padding: 40px 0;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            margin-bottom: 2rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Footer Styles */
+        .main-footer {
+            background: var(--dark);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .footer-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+            color: white;
+        }
+
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+        }
+
+        .footer-section h4 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .footer-links-group {
+            margin-bottom: 0;
+        }
+
+        .footer-links-group ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links-group ul li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .footer-links-group ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition);
+            display: block;
+            width: 100%;
+        }
+
+        .footer-links-group ul li a:hover {
+            color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        /* Contact Info Styles */
+        .contact-info li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .contact-info li i {
+            color: var(--accent);
+            margin-top: 2px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .contact-info li span {
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* Social Links */
+        .social-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            color: white;
+            font-size: 16px;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        section {
+            padding: 80px 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background-color: none;
+        }
+
+        .social-link:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* App Download Links */
+        .app-download-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .app-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .app-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .app-link i {
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .app-link span {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Footer Bottom */
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .footer-bottom p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Active navigation link */
+        .header-nav-link.active {
+            color: var(--primary);
+        }
+
+        .header-nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Modal specific styles */
+
+
+/* Value change animation */
+.value-change-pulse {
+    animation: pulse-green 1s ease-in-out;
+}
+
+@keyframes pulse-green {
+    0% { color: inherit; }
+    50% { color: var(--primary); text-shadow: 0 0 10px rgba(22, 163, 74, 0.5); }
+    100% { color: inherit; }
+}
+
+/* Modal card enhancements */
+.modal-content {
+    border: none;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border-bottom: none;
+}
+
+.modal-title i {
+    margin-right: 10px;
+}
+
+/* Live status indicator */
+.live-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--success);
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Booking button states */
+#submitBookingBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#submitBookingBtn:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+}
+
+        /* === Responsive Design === */
+        @media (max-width: 992px) {
+            .header-nav-list {
+                gap: 1rem;
+            }
+            
+            .header-auth {
+                gap: 0.5rem;
+            }
+            
+            .hero-title {
+                font-size: 2.8rem;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+            }
+            
+            .footer-section:last-child {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: flex;
+            }
+
+            .header-nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 80%;
+                max-width: 400px;
+                height: 100vh;
+                background: white;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: flex-start;
+                padding: 100px 30px 30px;
+                box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
+                transition: right 0.3s ease;
+                z-index: 999;
+                overflow-y: auto;
+            }
+
+            .header-nav.active {
+                right: 0;
+            }
+
+            .header-nav-list {
+                flex-direction: column;
+                gap: 0;
+                width: 100%;
+                margin-bottom: 2rem;
+            }
+
+            .header-nav-list li {
+                width: 100%;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .header-nav-link {
+                padding: 15px 0;
+                font-size: 1rem;
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .header-auth {
+                flex-direction: column;
+                width: 100%;
+                gap: 1rem;
+            }
+
+            .header-login-btn,
+            .header-register-btn,
+            .header-reserve-btn,
+            .user-menu-btn {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .user-dropdown {
+                width: 100%;
+            }
+
+            .user-dropdown-menu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                box-shadow: none;
+                border: none;
+                background: transparent;
+                padding: 0;
+                margin-top: 1rem;
+            }
+
+            .user-dropdown-item {
+                padding: 12px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .user-dropdown-item:last-child {
+                border-bottom: none;
+            }
+
+            .header-container {
+                padding: 10px 20px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .hero-title {
+                font-size: 2.2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            section {
+                padding: 60px 0;
+                min-height: auto;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .social-links {
+                justify-content: center;
+            }
+            
+            .app-download-links {
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            .app-link {
+                flex: 1;
+                max-width: 160px;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-nav {
+                width: 100%;
+                max-width: none;
+            }
+
+            .header-nav-list {
+                gap: 0;
+            }
+
+            .header-nav-link {
+                font-size: 1.1rem;
+            }
+
+            .header-logo {
+                font-size: 1.3rem;
+            }
+
+            .footer-content {
+                gap: 25px;
+            }
+            
+            .footer-section h3 {
+                font-size: 1.2rem;
+            }
+            
+            .app-download-links {
+                flex-direction: column;
+            }
+            
+            .app-link {
+                max-width: 100%;
+            }
+
+            .section-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .main-footer {
+                padding: 40px 0 20px;
+            }
+        }
+
+        /* Mobile menu overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Enhanced Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <a href="{% url 'home' %}" class="header-logo">
+                <i class="fas fa-motorcycle header-logo-icon"></i>
+                Wheel Wise Vision
+            </a>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Mobile Menu Overlay -->
+            <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+            
+            <nav class="header-nav" id="headerNav">
+                <ul class="header-nav-list">
+                    <li><a href="{% url 'home' %}" class="header-nav-link" data-section="home">
+                        <i class="fas fa-home"></i>
+                        Home
+                    </a></li>
+                    <li><a href="{% url 'home' %}#how-it-works" class="header-nav-link" data-section="how-it-works">
+                        <i class="fas fa-cogs"></i>
+                        How It Works
+                    </a></li>
+                    <li><a href="{% url 'home' %}#features" class="header-nav-link" data-section="features">
+                        <i class="fas fa-star"></i>
+                        Features
+                    </a></li>
+                    <li><a href="{% url 'home' %}#about" class="header-nav-link" data-section="about">
+                        <i class="fas fa-info-circle"></i>
+                        About
+                    </a></li>
+                    <li><a href="{% url 'home' %}#pricing" class="header-nav-link" data-section="pricing">
+                        <i class="fas fa-tag"></i>
+                        Pricing
+                    </a></li>
+                </ul>
+                
+                <div class="header-auth">
+                    {% if user.is_authenticated %}
+                        <!-- User is logged in - Show user dropdown -->
+                        <div class="user-dropdown">
+                            <button class="user-menu-btn">
+                                <div class="user-avatar">
+                                    {{ user.username|first|upper }}
+                                </div>
+                                <span>{{ user.username }}</span>
+                                <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                            </button>
+                            <div class="user-dropdown-menu">
+                                <a href="{% url 'profile' %}" class="user-dropdown-item">
+                                    <i class="fas fa-user"></i>
+                                    My Profile
+                                </a>
+                                <a href="{% url 'my_bookings' %}" class="user-dropdown-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    My Bookings
+                                </a>
+                                <div class="user-dropdown-divider"></div>
+                                <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="user-dropdown-item">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- User is not logged in - Show login/register buttons -->
+                        <a href="{% url 'login' %}" class="header-login-btn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </a>
+                        <a href="{% url 'signup' %}" class="header-register-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Register
+                        </a>
+                    {% endif %}
+                    
+                    <button class="header-reserve-btn" data-bs-toggle="modal" data-bs-target="#bookingModal">
+                        <i class="fas fa-calendar-alt header-reserve-icon"></i>
+                        Reserve Now (30min)
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Block -->
+    <main>
+        {% block content %}
+        <!-- Default Home Page Content -->
+        <section id="home" class="hero-section">
+            <div class="container">
+                <h1 class="hero-title">Smart Bike Parking Solutions</h1>
+                <p class="hero-subtitle">AI-powered parking management system for modern cities</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#bookingModal">
+                        <i class="fas fa-parking me-2"></i>
+                        Reserve Parking
+                    </button>
+                    <a href="#how-it-works" class="btn btn-outline">
+                        <i class="fas fa-play-circle me-2"></i>
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="bg-light">
+            <div class="container">
+                <h2 class="section-title">How It Works</h2>
+                <div class="section-card">
+                    <p>This is the How It Works section content...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="container">
+                <h2 class="section-title">Features</h2>
+                <div class="section-card">
+                    <p>This is the Features section content...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="bg-light">
+            <div class="container">
+                <h2 class="section-title">About Us</h2>
+                <div class="section-card">
+                    <p>This is the About section content...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <div class="container">
+                <h2 class="section-title">Contact Us</h2>
+                <div class="section-card">
+                    <p>This is the Contact section content...</p>
+                </div>
+            </div>
+        </section>
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- Section 1: Brand & Quick Links -->
+                <div class="footer-section">
+                    <h3>Wheel Wise Vision</h3>
+                    <p>Revolutionizing bike parking with AI-powered solutions for smart cities.</p>
+                    
+                    <div class="footer-links-group">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href="{% url 'home' %}">Home</a></li>
+                            <li><a href="{% url 'home' %}#how-it-works">How It Works</a></li>
+                            <li><a href="{% url 'home' %}#features">Features</a></li>
+                            <li><a href="{% url 'home' %}#about">About Us</a></li>
+                            <li><a href="{% url 'home' %}#pricing">Pricing</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Section 2: Services & Contact -->
+                <div class="footer-section">
+                    <div class="footer-links-group">
+                        <h3>Our Services</h3>
+                        <ul>
+                            <li><a href="#">Smart Parking</a></li>
+                            <li><a href="#">Slot Reservation</a></li>
+                            <li><a href="#">Real-time Tracking</a></li>
+                            <li><a href="#">AI Monitoring</a></li>
+                            <li><a href="#">Secure Payments</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-links-group mt-4">
+                        <h4>Support</h4>
+                        <ul>
+                            <li><a href="#">Help Center</a></li>
+                            <li><a href="#">FAQs</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Section 3: Contact & Social -->
+                <div class="footer-section">
+                    <div class="footer-links-group">
+                        <h3>Contact Info</h3>
+                        <ul class="contact-info">
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Packages Mall, Lahore, Pakistan</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-phone"></i>
+                                <span>+92 300 1234567</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-envelope"></i>
+                                <span>info@wheelwise.com</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-clock"></i>
+                                <span>24/7 Support Available</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-links-group mt-4">
+                        <h4>Follow Us</h4>
+                        <div class="social-links">
+                            <a href="#" class="social-link">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-link">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="social-link">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="social-link">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="social-link">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Wheel Wise Vision. All rights reserved. | Smart Parking Solutions</p>
+            </div>
+        </div>
+    </footer>
+
+       
+        <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form id="bookingForm" method="post" action="{% url 'book_slot' %}">
+                    {% csrf_token %}
+                    
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="bookingModalLabel">
+                            <i class="fas fa-parking"></i>
+                            Reserve Your Parking Slot
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <!-- Parking Availability Summary -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center bg-light">
+            <div class="card-body py-3">
+                <h6 class="card-title text-muted mb-1">Total Slots</h6>
+                <h4 class="text-primary mb-0" id="modalTotalSlots">26</h4>
+                <small class="text-muted" id="modalTotalStatus">Fixed capacity</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center bg-light">
+            <div class="card-body py-3">
+                <h6 class="card-title text-muted mb-1">Available Slots</h6>
+                <h4 class="text-success mb-0" id="modalAvailableSlots">0</h4>
+                <small class="text-muted" id="modalAvailableStatus">Checking...</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center bg-light">
+            <div class="card-body py-3">
+                <h6 class="card-title text-muted mb-1">Bookable Slots</h6>
+                <h4 class="text-info mb-0" id="modalBookableSlots">0</h4>
+                <small class="text-muted" id="modalBookableStatus">For booking</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Status Row -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-light border">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-sync-alt fa-spin text-primary me-2"></i>
+                    <span class="fw-medium">Live Status:</span>
+                    <span class="ms-2" id="modalLiveStatus">
+                        <span class="badge bg-danger" id="modalOccupiedSlots">0</span> occupied • 
+                        <span class="badge bg-warning" id="modalReservedSlots">0</span> reserved
+                    </span>
+                </div>
+                <div>
+                    <small class="text-muted" id="modalLastUpdate">Updated: Just now</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Status Alert -->
+<div id="bookingStatusAlert" class="alert alert-info mb-4">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-info-circle me-2"></i>
+        <div>
+            <span id="bookingStatusText">Checking parking availability...</span>
+            <div class="mt-1">
+                <small class="text-muted" id="availabilityDetails">
+                    Loading parking information...
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Status Card -->
+<div class="card border-0 shadow mb-4" style="border-left: 4px solid var(--accent);">
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                <i class="fas fa-sync-alt text-primary"></i>
+            </div>
+            <div>
+                <h6 class="mb-1">Live Parking Status</h6>
+                <p class="mb-0 text-muted small" id="modalLiveStatus">
+                    <span id="modalOccupiedSlots">0</span> occupied • 
+                    <span id="modalReservedSlots">0</span> reserved • 
+                    <span id="modalBookableSlots">0</span> bookable
+                </p>
+            </div>
+            <div class="ms-auto">
+                <small class="text-muted" id="modalLastUpdate">Just now</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+                        <!-- Booking Status Alert -->
+                        <div id="bookingStatusAlert" class="alert alert-info mb-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <div>
+                                    <span id="bookingStatusText">Checking parking availability...</span>
+                                    <div class="mt-1">
+                                        <small class="text-muted" id="availabilityDetails">
+                                            Loading parking information...
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="formErrors" class="alert alert-danger d-none mb-4"></div>
+                        
+                        <!-- Vehicle Info -->
+                        <div class="mb-4">
+                            <label for="vehicle_number" class="form-label">
+                                <i class="fas fa-motorcycle"></i>
+                                Vehicle Number*
+                            </label>
+                            <input type="text" id="vehicle_number" name="vehicle_number" required
+                                   class="form-control vehicle-number-input"
+                                   placeholder="e.g. ABC1234 (Max 10 chars, 1 letter + 1 number)"
+                                   maxlength="10">
+                            <div class="form-text">
+                                • Maximum 10 characters • At least 1 letter and 1 number • No spaces • Auto-uppercase
+                            </div>
+                            <div id="vehicleNumberFeedback" class="mt-1"></div>
+                        </div>
+                        
+                        <!-- Contact Info (for guests) -->
+                        {% if not user.is_authenticated %}
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="guest_email" class="form-label">
+                                    <i class="fas fa-envelope"></i>
+                                    Email*
+                                </label>
+                                <input type="email" id="guest_email" name="guest_email" required
+                                       class="form-control" placeholder="your@email.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="guest_phone" class="form-label">
+                                    <i class="fas fa-phone"></i>
+                                    Phone*
+                                </label>
+                                <input type="tel" id="guest_phone" name="guest_phone" required
+                                       class="form-control" placeholder="+92 300 1234567">
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Booking Information -->
+                        <div class="alert alert-warning mb-4">
+                            <div class="d-flex">
+                                <i class="fas fa-clock text-warning me-2 mt-1"></i>
+                                <div>
+                                    <h6 class="alert-heading mb-2">Booking Information</h6>
+                                    <p class="mb-1">• Booking starts immediately</p>
+                                    <p class="mb-1">• Expires in 30 minutes if vehicle doesn't arrive</p>
+                                    <p class="mb-0">• Slot will be assigned automatically</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitBookingBtn" disabled>
+                            <span id="submitText">Confirm Reservation</span>
+                            <span id="submitSpinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Vehicle number validation function
+    function validateVehicleNumber(vehicleNumber) {
+        // Remove any spaces and convert to uppercase
+        vehicleNumber = vehicleNumber.replace(/\s/g, '').toUpperCase();
+        
+        // Check length (max 10 characters)
+        if (vehicleNumber.length > 10) {
+            return {
+                isValid: false,
+                message: 'Vehicle number cannot exceed 10 characters'
+            };
+        }
+        
+        // Check if at least one alphabet and one numeric character exists
+        const hasAlphabet = /[A-Z]/.test(vehicleNumber);
+        const hasNumeric = /[0-9]/.test(vehicleNumber);
+        
+        if (!hasAlphabet || !hasNumeric) {
+            return {
+                isValid: false,
+                message: 'Vehicle number must contain at least one letter and one number'
+            };
+        }
+        
+        // Check if all characters are valid (only alphanumeric)
+        const isValidFormat = /^[A-Z0-9]+$/.test(vehicleNumber);
+        if (!isValidFormat) {
+            return {
+                isValid: false,
+                message: 'Vehicle number can only contain letters and numbers (no spaces or special characters)'
+            };
+        }
+        
+        return {
+            isValid: true,
+            cleanedValue: vehicleNumber
+        };
+    }
+
+    // Prevent invalid characters from being entered
+    function preventInvalidInput(event) {
+        const key = event.key;
+        
+        // Always allow these keys
+        const allowedKeys = [
+            'Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 
+            'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 
+            'Home', 'End', 'Shift', 'Control', 'Alt', 'Meta'
+        ];
+        
+        if (allowedKeys.includes(key)) {
+            return true;
+        }
+        
+        // Allow only alphanumeric characters for other keys
+        if (!/^[a-zA-Z0-9]$/.test(key)) {
+            event.preventDefault();
+            return false;
+        }
+        
+        return true;
+    }
+
+    // Real-time input formatting and validation
+    function formatVehicleNumber(input) {
+        let value = input.value.toUpperCase();
+        
+        // Remove any spaces and special characters
+        value = value.replace(/[^A-Z0-9]/g, '');
+        
+        // Limit to 10 characters
+        if (value.length > 10) {
+            value = value.substring(0, 10);
+            showFeedback(input, 'error', 'Maximum 10 characters reached');
+        } else {
+            // Validate the current value
+            const validation = validateVehicleNumber(value);
+            if (value.length > 0) {
+                showFeedback(input, validation.isValid ? 'success' : 'error', validation.message);
+            } else {
+                clearFeedback(input);
+            }
+        }
+        
+        // Update input value
+        input.value = value;
+        
+        // Update submit button state
+        updateSubmitButtonState(input);
+        
+        const validation = validateVehicleNumber(value);
+        return validation;
+    }
+
+    // Show validation feedback
+    function showFeedback(input, type, message) {
+        const feedback = document.getElementById('vehicleNumberFeedback');
+        
+        // Update input styling
+        input.classList.remove('validation-valid', 'validation-invalid');
+        if (type === 'success') {
+            input.classList.add('validation-valid');
+            feedback.className = 'text-success small';
+            feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+        } else if (type === 'error') {
+            input.classList.add('validation-invalid');
+            feedback.className = 'text-danger small';
+            feedback.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+        }
+    }
+
+    function clearFeedback(input) {
+        input.classList.remove('validation-valid', 'validation-invalid');
+        const feedback = document.getElementById('vehicleNumberFeedback');
+        feedback.innerHTML = '';
+        feedback.className = '';
+    }
+
+    // Update submit button state based on validation
+    function updateSubmitButtonState(input) {
+        const submitButton = document.getElementById('submitBookingBtn');
+        const validation = validateVehicleNumber(input.value);
+        
+        if (input.value.trim() === '' || !validation.isValid) {
+            submitButton.disabled = true;
+        } else {
+            // Check if booking is available before enabling
+            const bookableSlots = parseInt(document.getElementById('modalBookableSlots').textContent) || 0;
+            const bookingEnabled = !document.getElementById('bookingStatusAlert').classList.contains('alert-danger');
+            
+            if (bookingEnabled && bookableSlots > 0) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
+    }
+
+    // Initialize vehicle number input for modal
+    function setupModalVehicleInput() {
+        const modalVehicleInput = document.getElementById('vehicle_number');
+        
+        if (modalVehicleInput) {
+            // Add input event for real-time formatting
+            modalVehicleInput.addEventListener('input', function() {
+                formatVehicleNumber(this);
+            });
+            
+            // Add keydown event to prevent invalid characters
+            modalVehicleInput.addEventListener('keydown', function(e) {
+                preventInvalidInput(e);
+            });
+            
+            // Add paste event to handle copied text
+            modalVehicleInput.addEventListener('paste', function(e) {
+                // Let the paste happen first, then format
+                setTimeout(() => {
+                    formatVehicleNumber(this);
+                }, 0);
+            });
+            
+            // Initialize button state
+            updateSubmitButtonState(modalVehicleInput);
+        }
+    }
+
+    // Modal Live Data Updater
+    class ModalLiveData {
+        constructor() {
+            this.isUpdating = false;
+            this.updateInterval = 3000; // Update every 3 seconds
+            this.updateTimer = null;
+            this.init();
+        }
+
+        init() {
+            // Listen for modal open
+            const bookingModal = document.getElementById('bookingModal');
+            if (bookingModal) {
+                bookingModal.addEventListener('show.bs.modal', () => {
+                    this.startUpdates();
+                });
+
+                bookingModal.addEventListener('hide.bs.modal', () => {
+                    this.stopUpdates();
+                });
+            }
+        }
+
+        startUpdates() {
+            // Update immediately
+            this.updateData();
+            
+            // Then update every interval
+            if (this.updateTimer) {
+                clearInterval(this.updateTimer);
+            }
+            this.updateTimer = setInterval(() => {
+                this.updateData();
+            }, this.updateInterval);
+        }
+
+        stopUpdates() {
+            if (this.updateTimer) {
+                clearInterval(this.updateTimer);
+                this.updateTimer = null;
+            }
+        }
+
+        async updateData() {
+            if (this.isUpdating) return;
+            
+            this.isUpdating = true;
+            
+            try {
+                // Fetch all required data
+                const [cameraData, slotData, bookingData] = await Promise.all([
+                    fetch("{% url 'get_detected_slot' %}").then(r => r.json()),
+                    fetch("{% url 'get_slot_data' %}").then(r => r.json()),
+                    fetch("{% url 'booking_availability_api' %}").then(r => r.json())
+                ]);
+                
+                // Calculate values
+                const TOTAL_SLOTS = 26;
+                const occupied = cameraData.bike_count || 0;
+                const reserved = slotData.reserved_slots || 0;
+                const available = Math.max(0, TOTAL_SLOTS - (occupied + reserved));
+                const bookable = bookingData.available_for_booking || 0;
+                
+                // Update display
+                this.updateDisplay({
+                    totalSlots: TOTAL_SLOTS,
+                    availableSlots: available,
+                    occupiedSlots: occupied,
+                    reservedSlots: reserved,
+                    bookableSlots: bookable,
+                    bookingEnabled: bookingData.booking_enabled,
+                    bookingDisabledReason: bookingData.booking_disabled_reason
+                });
+                
+                // Update timestamp
+                this.updateTimestamp();
+                
+                // Update vehicle input button state
+                const vehicleInput = document.getElementById('vehicle_number');
+                if (vehicleInput) {
+                    updateSubmitButtonState(vehicleInput);
+                }
+                
+            } catch (error) {
+                console.error('Error updating modal data:', error);
+                document.getElementById('modalAvailableStatus').textContent = 'Update failed';
+                document.getElementById('modalAvailableStatus').className = 'text-danger';
+            } finally {
+                this.isUpdating = false;
+            }
+        }
+
+        updateDisplay(data) {
+            // Update numbers with animation if they changed
+            this.updateNumberWithAnimation('modalTotalSlots', data.totalSlots);
+            this.updateNumberWithAnimation('modalAvailableSlots', data.availableSlots);
+            this.updateNumberWithAnimation('modalOccupiedSlots', data.occupiedSlots);
+            this.updateNumberWithAnimation('modalReservedSlots', data.reservedSlots);
+            this.updateNumberWithAnimation('modalBookableSlots', data.bookableSlots);
+            
+            // Update status texts
+            this.updateStatusTexts(data);
+            
+            // Update booking status
+            this.updateBookingStatus(data);
+        }
+
+        updateNumberWithAnimation(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const currentValue = parseInt(element.textContent) || 0;
+            
+            if (currentValue !== newValue) {
+                // Add animation class
+                element.classList.add('number-updated');
+                setTimeout(() => {
+                    element.classList.remove('number-updated');
+                }, 500);
+            }
+            
+            element.textContent = newValue;
+        }
+
+        updateStatusTexts(data) {
+            // Update available status
+            const availableStatus = document.getElementById('modalAvailableStatus');
+            if (data.availableSlots === 0 && data.reservedSlots > 0) {
+                availableStatus.textContent = 'All reserved/occupied';
+                availableStatus.className = 'text-danger';
+            } else if (data.availableSlots === 0) {
+                availableStatus.textContent = 'Fully occupied';
+                availableStatus.className = 'text-danger';
+            } else if (data.availableSlots < 5) {
+                availableStatus.textContent = 'Almost full';
+                availableStatus.className = 'text-warning';
+            } else if (data.availableSlots === data.totalSlots) {
+                availableStatus.textContent = 'All available';
+                availableStatus.className = 'text-success';
+            } else {
+                availableStatus.textContent = 'Available';
+                availableStatus.className = 'text-success';
+            }
+            
+            // Update bookable status
+            const bookableStatus = document.getElementById('modalBookableStatus');
+            if (data.bookableSlots > 0) {
+                bookableStatus.textContent = `${data.bookableSlots} bookable`;
+                bookableStatus.className = 'text-success';
+            } else {
+                bookableStatus.textContent = 'None bookable';
+                bookableStatus.className = 'text-danger';
+            }
+            
+            // Update total status
+            document.getElementById('modalTotalStatus').textContent = 'Fixed capacity';
+            
+            // Update live status
+            document.getElementById('modalLiveStatus').innerHTML = `
+                <span class="badge bg-danger">${data.occupiedSlots}</span> occupied • 
+                <span class="badge bg-warning">${data.reservedSlots}</span> reserved
+            `;
+        }
+
+        updateBookingStatus(data) {
+            const bookingStatusText = document.getElementById('bookingStatusText');
+            const bookingStatusAlert = document.getElementById('bookingStatusAlert');
+            const availabilityDetails = document.getElementById('availabilityDetails');
+            
+            if (data.bookingEnabled && data.bookableSlots > 0) {
+                bookingStatusText.innerHTML = `<i class="fas fa-check-circle me-2"></i>Parking slots available!`;
+                bookingStatusAlert.className = 'alert alert-success mb-4';
+                availabilityDetails.innerHTML = `
+                    <span class="text-success">
+                        <i class="fas fa-info-circle"></i> 
+                        ${data.bookableSlots} slots available for booking
+                    </span>
+                `;
+            } else {
+                bookingStatusText.innerHTML = `<i class="fas fa-times-circle me-2"></i>${data.bookingDisabledReason || 'No slots available'}`;
+                bookingStatusAlert.className = 'alert alert-danger mb-4';
+                availabilityDetails.innerHTML = `
+                    <span class="text-danger">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        ${data.bookingDisabledReason || 'Cannot book at this time'}
+                    </span>
+                `;
+            }
+        }
+
+        updateTimestamp() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('modalLastUpdate').textContent = `Updated: ${timeString}`;
+        }
+    }
+
+    // Show success message
+    function showSuccessMessage(message) {
+        // Create and show a toast notification
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed top-0 end-0 p-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="toast show" role="alert">
+                <div class="toast-header bg-success text-white">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        // Remove toast after 5 seconds
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+
+    // Show vehicle warning
+    function showVehicleWarning(message) {
+        const warning = document.createElement('div');
+        warning.className = 'alert alert-warning alert-dismissible fade show mt-2';
+        warning.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        const vehicleInput = document.getElementById('vehicle_number');
+        if (vehicleInput) {
+            vehicleInput.parentNode.appendChild(warning);
+        }
+    }
+
+    // Main DOM Content Loaded function
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize modal live data updater
+        window.modalLiveData = new ModalLiveData();
+        
+        // Setup modal vehicle input
+        setupModalVehicleInput();
+        
+        // Mobile Menu Functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const headerNav = document.getElementById('headerNav');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        const headerNavLinks = document.querySelectorAll('.header-nav-link');
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            mobileMenuToggle.classList.toggle('active');
+            headerNav.classList.toggle('active');
+            mobileMenuOverlay.classList.toggle('active');
+            document.body.style.overflow = headerNav.classList.contains('active') ? 'hidden' : '';
+        }
+
+        // Event listeners for mobile menu
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        }
+        
+        if (mobileMenuOverlay) {
+            mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+        }
+
+        // Close mobile menu when clicking on nav links
+        headerNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleMobileMenu();
+                }
+            });
+        });
+
+        // Close mobile menu on window resize if it becomes larger than mobile breakpoint
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768 && headerNav && headerNav.classList.contains('active')) {
+                toggleMobileMenu();
+            }
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.main-header');
+            if (header) {
+                if (window.scrollY > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            }
+        });
+
+        // Navigation and Section Handling
+        const currentUrl = window.location.href;
+        const currentHash = window.location.hash;
+        
+        // Check if we're on home page or other pages
+        const isHomePage = currentUrl.includes('{% url "home" %}') || currentUrl === window.location.origin + '/';
+        
+        // Handle navigation links
+        document.querySelectorAll('.header-nav-link[data-section]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const section = this.getAttribute('data-section');
+                
+                if (isHomePage) {
+                    // On home page - smooth scroll to section
+                    e.preventDefault();
+                    const targetElement = document.getElementById(section);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                        
+                        // Update URL hash without page reload
+                        history.pushState(null, null, `#${section}`);
+                    }
+                } else {
+                    // On other pages - redirect to home page with hash
+                    e.preventDefault();
+                    window.location.href = `{% url 'home' %}#${section}`;
+                }
+            });
+        });
+        
+        // Handle direct URL hashes on home page
+        if (isHomePage && currentHash) {
+            const targetElement = document.querySelector(currentHash);
+            if (targetElement) {
+                setTimeout(() => {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+            }
+        }
+        
+        // Update active navigation link based on scroll position (home page only)
+        if (isHomePage) {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.header-nav-link[data-section]');
+            
+            function updateActiveNavLink() {
+                let currentSection = '';
+                const scrollPosition = window.scrollY + 100;
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                        currentSection = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-section') === currentSection) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            
+            // Initial update
+            updateActiveNavLink();
+            
+            // Update on scroll
+            window.addEventListener('scroll', updateActiveNavLink);
+        }
+
+        // Booking Modal Form Submission
+        const bookingModal = document.getElementById('bookingModal');
+        const bookingForm = document.getElementById('bookingForm');
+        const submitBookingBtn = document.getElementById('submitBookingBtn');
+
+        // When modal opens, reset form
+        if (bookingModal) {
+            bookingModal.addEventListener('show.bs.modal', function() {
+                // Form will be reset by Bootstrap, just update button state
+                const vehicleInput = document.getElementById('vehicle_number');
+                if (vehicleInput) {
+                    clearFeedback(vehicleInput);
+                    updateSubmitButtonState(vehicleInput);
+                }
+            });
+        }
+
+        // Form submission
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const vehicleInput = document.getElementById('vehicle_number');
+                const vehicleNumber = vehicleInput.value.trim();
+                
+                // Validate vehicle number before submission
+                const validation = validateVehicleNumber(vehicleNumber);
+                if (!validation.isValid) {
+                    e.preventDefault();
+                    showFeedback(vehicleInput, 'error', validation.message);
+                    vehicleInput.focus();
+                    return false;
+                }
+                
+                // Update with cleaned value
+                vehicleInput.value = validation.cleanedValue;
+                
+                const formData = new FormData(this);
+                const submitText = document.getElementById('submitText');
+                const submitSpinner = document.getElementById('submitSpinner');
+                const formErrors = document.getElementById('formErrors');
+                
+                // Show loading state
+                submitBookingBtn.disabled = true;
+                submitText.textContent = 'Processing...';
+                submitSpinner.classList.remove('d-none');
+                if (formErrors) {
+                    formErrors.classList.add('d-none');
+                }
+
+                try {
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Close the modal
+                        const modal = bootstrap.Modal.getInstance(bookingModal);
+                        if (modal) {
+                            modal.hide();
+                        }
+                        
+                        // Show success message
+                        showSuccessMessage('Booking created successfully!');
+                        
+                        // Redirect to confirmation page
+                        if (data.redirect_url) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect_url;
+                            }, 1500);
+                        }
+                    } else {
+                        // Show errors
+                        let errorHtml = '';
+                        if (data.errors) {
+                            for (const [field, errors] of Object.entries(data.errors)) {
+                                const fieldName = field === '__all__' ? 'General' : field.replace(/_/g, ' ');
+                                errorHtml += `<p><strong>${fieldName}:</strong> ${errors.join(', ')}</p>`;
+                            }
+                        } else {
+                            errorHtml = '<p>An error occurred while processing your booking.</p>';
+                        }
+                        
+                        if (formErrors) {
+                            formErrors.innerHTML = errorHtml;
+                            formErrors.classList.remove('d-none');
+                            // Scroll to errors
+                            formErrors.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    if (formErrors) {
+                        formErrors.innerHTML = '<p>An error occurred. Please try again.</p>';
+                        formErrors.classList.remove('d-none');
+                    }
+                } finally {
+                    // Reset button state
+                    submitBookingBtn.disabled = false;
+                    submitText.textContent = 'Confirm Reservation';
+                    submitSpinner.classList.add('d-none');
+                }
+            });
+        }
+
+        // Real-time vehicle validation (optional)
+        const vehicleInput = document.getElementById('vehicle_number');
+        if (vehicleInput) {
+            vehicleInput.addEventListener('blur', async function() {
+                const vehicleNumber = this.value.trim();
+                if (vehicleNumber) {
+                    try {
+                        const response = await fetch(`{% url 'check_vehicle_status' %}?vehicle_number=${encodeURIComponent(vehicleNumber)}`);
+                        const data = await response.json();
+                        
+                        if (data.is_parked) {
+                            showVehicleWarning(`Vehicle ${vehicleNumber} is already parked in Slot ${data.slot_number}`);
+                        }
+                    } catch (error) {
+                        // Silently fail - this is just a nice-to-have feature
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+<style>
+    /* Vehicle number validation styles */
+    .vehicle-number-feedback {
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .validation-valid {
+        border-color: #198754 !important;
+        background-color: #f8fff9;
+    }
+
+    .validation-invalid {
+        border-color: #dc3545 !important;
+        background-color: #fff5f5;
+    }
+
+    .text-success {
+        color: #198754 !important;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .vehicle-number-feedback i {
+        margin-right: 0.25rem;
+    }
+
+    /* Parking cards styling */
+    .card.bg-light {
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .card.bg-light:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .card-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .card h4 {
+        font-weight: 700;
+    }
+
+    /* Number update animation */
+    .number-updated {
+        animation: pulse-update 0.5s ease-in-out;
+    }
+
+    @keyframes pulse-update {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    /* Badge styles */
+    .badge {
+        display: inline-block;
+        padding: 0.25em 0.6em;
+        font-size: 0.75em;
+        font-weight: 600;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+        color: white;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+        color: black;
+    }
+
+    .bg-success {
+        background-color: #198754 !important;
+        color: white;
+    }
+
+    .bg-info {
+        background-color: #0dcaf0 !important;
+        color: white;
+    }
+
+    .bg-primary {
+        background-color: #0d6efd !important;
+        color: white;
+    }
+
+    /* Spinning icon */
+    .fa-spin {
+        animation: fa-spin 2s infinite linear;
+    }
+
+    @keyframes fa-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Toast notification */
+    .toast {
+        background-color: white;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .toast-header {
+        border-radius: 0.375rem 0.375rem 0 0;
+    }
+
+    .toast-body {
+        padding: 0.75rem 1rem;
+    }
+</style>
+
+</body>
+</html>

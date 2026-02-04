@@ -1,0 +1,40 @@
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Book Parking Slot</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {% if not user.is_authenticated %}
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> As a guest, you won't be able to view booking history later
+          </div>
+          {% endif %}
+          
+          <form id="bookingForm" method="post" action="{% url 'book_slot' %}">
+            {% csrf_token %}
+            
+            {% if not user.is_authenticated %}
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-control" name="phone" required>
+            </div>
+            {% endif %}
+            
+            <!-- Other form fields -->
+            <div class="mb-3">
+              <label class="form-label">Vehicle Number</label>
+              <input type="text" class="form-control" name="vehicle_number" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>

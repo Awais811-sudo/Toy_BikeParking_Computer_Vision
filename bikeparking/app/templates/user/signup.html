@@ -1,0 +1,783 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Wheel Wise Vision</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* === CSS Variables === */
+        :root {
+            --primary: #16a34a;
+            --secondary: #3f37c9;
+            --accent: #10b981;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --text: #495057;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --border-radius: 12px;
+        }
+
+        /* === Reset & Base Styles === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #fff;
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.1) 0%, rgba(63, 55, 201, 0.1) 100%), 
+                        url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmlrZSUyMHBhcmtpbmclMjBiYWNrZ3JvdW5kfGVufDB8fDB8fHww') center/cover fixed;
+        }
+
+        /* === Header Styles === */
+        .main-header {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 12px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .main-header.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-logo {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .header-logo:hover {
+            color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .header-logo::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .header-logo:hover::after {
+            width: 100%;
+        }
+
+        .header-logo-icon {
+            font-size: 1.6rem;
+            color: var(--accent);
+            transition: var(--transition);
+        }
+
+        .header-logo:hover .header-logo-icon {
+            transform: rotate(15deg);
+            color: var(--secondary);
+        }
+
+        /* === Register Main Section === */
+        .register-main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 120px 20px 80px;
+            position: relative;
+        }
+
+        .register-main::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 0;
+        }
+
+        .register-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            padding: 3rem 2.5rem;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .register-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2rem;
+            box-shadow: 0 10px 30px rgba(22, 163, 74, 0.3);
+        }
+
+        .register-card h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .register-card p {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group label i {
+            color: var(--primary);
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(22, 163, 74, 0.25);
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 55px;
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+
+        .helptext {
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-top: 0.5rem;
+            display: block;
+            padding: 0.5rem 0.8rem;
+            background: rgba(22, 163, 74, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .helptext ul {
+            margin: 0.5rem 0 0 1rem;
+            padding: 0;
+        }
+
+        .helptext li {
+            margin-bottom: 0.3rem;
+        }
+
+        .register-btn-large {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin: 2rem 0 1.5rem;
+            transition: var(--transition);
+            box-shadow: 0 8px 25px rgba(22, 163, 74, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-btn-large::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .register-btn-large:hover::before {
+            left: 100%;
+        }
+
+        .register-btn-large:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.4);
+        }
+
+        .login-link {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .login-link p {
+            color: var(--text);
+            margin-bottom: 0;
+        }
+
+        .login-link a {
+            color: var(--primary);
+            font-weight: 700;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .login-link a:hover {
+            color: var(--secondary);
+            transform: translateX(3px);
+        }
+
+        /* Error messages */
+        .input-error {
+    border-color: #dc3545 !important;
+    background: #fff5f5;
+}
+
+.validation-error {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.4rem;
+    font-weight: 500;
+}
+
+
+        .alert {
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+            border: none;
+            font-weight: 500;
+        }
+
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border-left: 4px solid #dc3545;
+        }
+
+        .errorlist {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            list-style: none;
+            padding-left: 0;
+            font-weight: 500;
+        }
+
+        .errorlist li {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 0.3rem;
+        }
+
+        .errorlist li::before {
+            content: '⚠';
+            font-size: 0.8rem;
+        }
+
+        /* Form row for side-by-side fields */
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* === Footer Styles === */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 30px;
+            max-width: 1200px;
+            margin: 0 auto 30px;
+            padding: 0 20px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            transition: var(--transition);
+        }
+
+        .footer-column ul li a:hover {
+            color: var(--accent);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 20px 0;
+        }
+
+        /* === Responsive Design === */
+        @media (max-width: 768px) {
+            .register-card {
+                padding: 2.5rem 2rem;
+            }
+            
+            .register-card h1 {
+                font-size: 2rem;
+            }
+            
+            .register-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .register-main {
+                padding: 100px 15px 60px;
+            }
+            
+            .register-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .register-card h1 {
+                font-size: 1.8rem;
+            }
+            
+            .register-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <a href="{% url 'home' %}" class="header-logo">
+                <i class="fas fa-motorcycle header-logo-icon"></i>
+                Wheel Wise Vision
+            </a>
+        </div>
+    </header>
+
+    <!-- Register Main Section -->
+    <main class="register-main">
+        <div class="register-container">
+            <div class="register-card">
+                <div class="register-header">
+                    <div class="register-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h1>Join Our Community</h1>
+                    <p>Create your account to get started</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}">
+                                {% if field.name == 'username' %}
+                                    <i class="fas fa-user"></i>
+                                {% elif field.name == 'email' %}
+                                    <i class="fas fa-envelope"></i>
+                                {% elif field.name == 'password1' or field.name == 'password2' %}
+                                    <i class="fas fa-lock"></i>
+                                {% elif field.name == 'first_name' %}
+                                    <i class="fas fa-signature"></i>
+                                {% elif field.name == 'last_name' %}
+                                    <i class="fas fa-user-tag"></i>
+                                {% else %}
+                                    <i class="fas fa-pencil-alt"></i>
+                                {% endif %}
+                                {{ field.label }}
+                            </label>
+                            
+                            {{ field }}
+                            
+                            {% if field.name == 'password1' or field.name == 'password2' %}
+                                <button type="button" class="password-toggle" data-target="{{ field.id_for_label }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            {% endif %}
+                            
+                            {% if field.help_text %}
+                                <span class="helptext">{{ field.help_text|safe }}</span>
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                                <ul class="errorlist">
+                                    {% for error in field.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="register-btn-large">
+                        <i class="fas fa-user-plus"></i>
+                        Create Your Account
+                    </button>
+                    
+                    <div class="login-link">
+                        <p>Already have an account? 
+                            <a href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Sign In Here
+                            </a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Wheel Wise Vision</h3>
+                <p>AI-powered bike parking solutions for a smarter, more sustainable future.</p>
+            </div>
+            
+            
+            <div class="footer-column">
+                <h3>Contact Info</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> Packages Mall, Lahore</li>
+                    <li><i class="fas fa-phone"></i> +92 300 1234567</li>
+                    <li><i class="fas fa-envelope"></i> info@wheelwise.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 Wheel Wise Vision. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+
+    function showError(input, message) {
+        input.classList.add("input-error");
+
+        let error = input.parentElement.querySelector(".validation-error");
+        if (!error) {
+            error = document.createElement("div");
+            error.classList.add("validation-error");
+            input.parentElement.appendChild(error);
+        }
+        error.innerText = message;
+    }
+
+    function clearError(input) {
+        input.classList.remove("input-error");
+        const error = input.parentElement.querySelector(".validation-error");
+        if (error) error.remove();
+    }
+
+    function isValidEmail(email) {
+    // basic email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+        return false;
+    }
+
+    // get part before @
+    const localPart = email.split("@")[0];
+
+    // ❌ reject if local part is only numbers
+    if (/^\d+$/.test(localPart)) {
+        return false;
+    }
+
+    return true;
+}
+
+
+
+    form.addEventListener("submit", function (e) {
+        let valid = true;
+
+        const username = form.querySelector("#id_username");
+        const email = form.querySelector("#id_email");
+        const password1 = form.querySelector("#id_password1");
+        const password2 = form.querySelector("#id_password2");
+
+        // Clear old errors
+        [username, email, password1, password2].forEach(input => {
+            if (input) clearError(input);
+        });
+
+        // Username
+        if (username) {
+        const value = username.value.trim();
+
+        // ❌ must be at least 4 characters
+        if (value.length < 4) {
+            showError(username, "Username must be at least 4 characters.");
+            valid = false;
+        }
+        // ❌ cannot start with a number
+        else if (/^\d/.test(value)) {
+            showError(username, "Username cannot start with a number.");
+            valid = false;
+        }
+        }
+
+        // Email
+        if (email && !isValidEmail(email.value.trim())) {
+            showError(email, "Please enter a valid email address.");
+            valid = false;
+        }
+
+        // Password length validation (minimum 8 characters)
+        if (password1) {
+            if (password1.value.trim().length < 8) {
+                showError(password1, "Password must be at least 8 characters.");
+                valid = false;
+            }
+        }
+
+        // Password match validation
+        if (password1 && password2) {
+            if (password1.value !== password2.value) {
+                showError(password2, "Passwords do not match.");
+                valid = false;
+            }
+        }
+
+
+        if (!valid) {
+            e.preventDefault(); // Stop form submission
+        }
+    });
+});
+        // Password toggle functionality
+        document.querySelectorAll('.password-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const passwordInput = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.main-header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Add focus effects to form inputs
+        document.querySelectorAll('.form-group input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+        });
+
+        // Auto-add data-target attributes to password toggles
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.password-toggle').forEach((toggle, index) => {
+                const passwordFields = document.querySelectorAll('input[type="password"]');
+                if (passwordFields[index]) {
+                    toggle.setAttribute('data-target', passwordFields[index].id);
+                }
+            });
+        });
+    </script>
+    
+    
+
+</body>
+</html>

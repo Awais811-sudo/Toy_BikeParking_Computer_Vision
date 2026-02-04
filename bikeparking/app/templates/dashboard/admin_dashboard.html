@@ -1,0 +1,606 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}BikePark Manager - Admin Dashboard{% endblock %}
+
+{% block content %}
+<!-- Main Dashboard Content -->
+<div class="container mx-auto px-4 py-6">
+  <!-- Dashboard Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+      <p class="text-gray-600 mt-2">Monitor and manage bike parking facilities in real-time</p>
+    </div>
+    <div class="mt-4 md:mt-0  flex items-center space-x-4">
+      <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+        </svg>
+        <span id="currentTime">Loading...</span>
+      </div>
+      <button class="bg-white border border-gray-300 text-white-700 px-4 py-2 rounded-lg flex items-center hover:bg-yellow-500 transition-colors duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+        Export Report
+      </button>
+    </div>
+  </div>
+
+
+<!-- Key Metrics / KPIs -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-blue-100">Total Parking Slots</p>
+        <p id="totalSlots" class="text-4xl font-bold mt-2">26</p>
+      </div>
+      <div class="bg-blue-400 p-3 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+      <span class="text-sm" id="totalSlotsStatus">Fixed capacity</span>
+    </div>
+  </div>
+  
+<!-- Add this to your admin dashboard metrics section -->
+<div class="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+    <div class="flex justify-between items-start">
+        <div>
+            <p class="text-indigo-100">Booking Limits</p>
+            <p class="text-4xl font-bold mt-2" id="bookableSlots">{{ MAX_BOOKABLE_SLOTS }}</p>
+            <p class="text-sm mt-1">Max Bookable Slots</p>
+        </div>
+        <div class="bg-indigo-400 p-3 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+        </div>
+    </div>
+    <div class="mt-4">
+        <div class="flex justify-between text-sm">
+            <span>Current Booked:</span>
+            <span id="currentBookedSlots">0</span>
+        </div>
+        <div class="flex justify-between text-sm mt-1">
+            <span>Booking Cutoff:</span>
+            <span id="bookingCutoffPercent">{{ MAX_OCCUPANCY_FOR_BOOKING_PERCENT }}%</span>
+        </div>
+    </div>
+</div>
+
+  <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-green-100">Available Slots</p>
+        <p id="availableSlots" class="text-4xl font-bold mt-2">26</p>
+      </div>
+      <div class="bg-green-400 p-3 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+      <span class="text-sm" id="availableSlotsStatus">Ready for parking</span>
+    </div>
+  </div>
+  
+  <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-red-100">Occupied Slots</p>
+        <p id="occupiedSlots" class="text-4xl font-bold mt-2">0</p>
+      </div>
+      <div class="bg-red-400 p-3 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+      </svg>
+      <span class="text-sm" id="occupancyTrend">Live detection</span>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-purple-100">Occupancy Rate</p>
+        <p id="occupancyRate" class="text-4xl font-bold mt-2">0%</p>
+      </div>
+      <div class="bg-purple-400 p-3 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="text-sm" id="lastUpdateTime">Updating...</span>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Main Dashboard Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Live Camera & Detection Panel -->
+    <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Live Camera Detection</h2>
+        <div class="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full">
+          <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+          <span class="text-sm font-medium">LIVE</span>
+        </div>
+      </div>
+      
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Camera Feed -->
+        <div class="lg:w-2/3">
+          <div class="rounded-xl overflow-hidden border-2 border-gray-200 shadow-md relative">
+            <img id="cameraFeed" src="{% url 'camera_feed' %}" alt="Live Camera Feed" class="w-full h-64 lg:h-80 object-cover">
+            <div class="absolute top-0 left-0 bg-black bg-opacity-70 text-white px-3 py-1 text-sm rounded-br-lg">
+              Parking Area Camera
+            </div>
+            <div class="absolute bottom-0 left-0 bg-black bg-opacity-70 text-white px-3 py-1 text-sm rounded-tr-lg">
+              <span id="cameraStats">Detecting...</span>
+            </div>
+          </div>
+        </div>
+        
+        
+<!-- Detection Panel -->
+<div class="lg:w-1/3">
+  <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 h-full">
+    <h3 class="text-lg font-semibold text-gray-700 mb-4">Live Detection Statistics</h3>
+    
+    <div class="mb-4">
+      <p class="text-sm text-gray-500 mb-2">Currently Detected Slot</p>
+      <div class="bg-white rounded-lg p-4 shadow-sm border">
+        <p id="detectedSlot" class="text-2xl font-bold text-center text-green-600">None</p>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <p class="text-sm text-gray-500 mb-2">Live Slot Detection</p>
+      <div class="bg-white rounded-lg p-3 shadow-sm border">
+        <div class="flex justify-between text-sm">
+          <span>Total Slots:</span>
+          <span id="totalSlotsDetected" class="font-semibold">26</span>
+        </div>
+        <div class="flex justify-between text-sm mt-1">
+          <span>Available Slots:</span>
+          <span id="availableSlotsDetected" class="font-semibold text-green-600">26</span>
+        </div>
+        <div class="flex justify-between text-sm mt-1">
+          <span>Occupied Slots:</span>
+          <span id="occupiedSlotsDetected" class="font-semibold text-red-600">0</span>
+        </div>
+        <div class="flex justify-between text-sm mt-1">
+          <span>Reserved Slots:</span>
+          <span id="reservedSlotsDetected" class="font-semibold text-yellow-600">0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      </div>
+    </div>
+
+    <!-- Alerts & Notifications Panel -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Alerts & Notifications</h2>
+        <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full" id="alertsCount">0 New</span>
+      </div>
+      
+      <div class="space-y-4 max-h-96 overflow-y-auto pr-2" id="alertsContainer">
+        <!-- Alerts will be populated by JavaScript -->
+        <div class="flex items-start p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex-shrink-0 mt-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-sm font-medium text-blue-800">System Ready</h4>
+            <p class="text-xs text-blue-600 mt-1">AI detection system is running and monitoring parking area.</p>
+            <p class="text-xs text-blue-500 mt-1" id="systemTime">Loading...</p>
+          </div>
+        </div>
+      </div>
+      
+      <button class="w-full mt-4 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors duration-200">
+        View All Alerts
+      </button>
+    </div>
+  </div>
+
+  
+  <!-- Quick Actions -->
+  
+
+  <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <h2 class="text-xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <a href="{% url 'create_booking' %}" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        <span class="font-medium">Add New Booking</span>
+      </a>
+      
+      <a href="{% url 'economics_dashboard' %}" class="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+  </svg>
+  <span class="font-medium">Economics Report</span>
+</a>
+      
+      <a href="{% url 'booking_history' %}" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <span class="font-medium">View Bookings</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+
+
+    
+  </div>
+</div>
+
+<style>
+  .highlight {
+    border-color: #22c55e;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+    background-color: rgba(34, 197, 94, 0.05);
+  }
+  
+  .slot-card {
+    border-color: #e5e7eb;
+  }
+  
+  .slot-selected {
+    border-color: #3b82f6;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+  
+  .pulse-animation {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  .hidden-slot {
+    display: none;
+  }
+</style>
+
+<script>
+// Real-time Parking Metrics Updater
+class ParkingMetricsUpdater {
+    constructor() {
+        this.isUpdating = false;
+        this.updateInterval = 3000;
+        this.lastOccupiedSlots = 0;
+        this.TOTAL_SLOTS = 26; // Fixed total slots
+        this.MAX_BOOKABLE_SLOTS = '{{ MAX_BOOKABLE_SLOTS }}'; // From Django context
+        this.init();
+    }
+
+    init() {
+        this.updateTime();
+        
+        // Update time every second
+        setInterval(() => this.updateTime(), 1000);
+        
+        // Update detection data every 2 seconds
+        setInterval(() => this.updateDetectionData(), 2000);
+        
+        // Initial update
+        this.updateDetectionData();
+    }
+
+    updateTime() {
+        const now = new Date();
+        document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+        document.getElementById('systemTime').textContent = now.toLocaleTimeString();
+    }
+
+    async updateDetectionData() {
+        if (this.isUpdating) return;
+        
+        this.isUpdating = true;
+        
+        try {
+            // Fetch camera detection data for occupied slots
+            const cameraResponse = await fetch("{% url 'get_detected_slot' %}");
+            const cameraData = await cameraResponse.json();
+            
+            console.log('Camera detection data:', cameraData);
+            
+            // Update detection display
+            const detectedSlotElement = document.getElementById('detectedSlot');
+            if (detectedSlotElement) {
+                detectedSlotElement.textContent = cameraData.detected_slot || "None";
+                if (cameraData.detected_slot && cameraData.detected_slot !== "None") {
+                    detectedSlotElement.classList.remove("text-gray-500");
+                    detectedSlotElement.classList.add("text-green-600");
+                } else {
+                    detectedSlotElement.classList.remove("text-green-600");
+                    detectedSlotElement.classList.add("text-gray-500");
+                }
+            }
+            
+            // Fetch reserved slots data from database
+            const slotResponse = await fetch("{% url 'get_slot_data' %}");
+            const slotData = await slotResponse.json();
+            
+            console.log('Slot data from database:', slotData);
+            
+            // Calculate metrics using camera data for occupied and database for reserved
+            const totalSlots = this.TOTAL_SLOTS;
+            const occupiedSlotsFromCamera = cameraData.bike_count || 0;
+            const reservedSlotsFromDB = slotData.reserved_slots || 0;
+            const currentBookedSlots = slotData.current_booked_slots || 0;
+            
+            // Available = Total - (Camera Occupied + Reserved from DB)
+            const availableSlots = Math.max(0, totalSlots - (occupiedSlotsFromCamera + reservedSlotsFromDB));
+            
+            // Calculate occupancy rate (only based on camera occupied slots)
+            const occupancyRate = totalSlots > 0 ? 
+                Math.round((occupiedSlotsFromCamera / totalSlots) * 100) : 0;
+            
+            // Update detection panel
+            document.getElementById('totalSlotsDetected').textContent = totalSlots;
+            document.getElementById('availableSlotsDetected').textContent = availableSlots;
+            document.getElementById('occupiedSlotsDetected').textContent = occupiedSlotsFromCamera;
+            document.getElementById('reservedSlotsDetected').textContent = reservedSlotsFromDB;
+            
+            // Update main metrics with animation
+            this.animateValue('totalSlots', totalSlots);
+            this.animateValue('availableSlots', availableSlots);
+            this.animateValue('occupiedSlots', occupiedSlotsFromCamera);
+            this.animateValue('occupancyRate', occupancyRate, '%');
+            
+            // Update booking limits
+            document.getElementById('currentBookedSlots').textContent = currentBookedSlots;
+            
+            // Update booking status indicator
+            const bookingStatus = document.querySelector('.bg-indigo-500');
+            if (bookingStatus) {
+                const bookingAvailability = await this.getBookingAvailability();
+                if (!bookingAvailability.booking_enabled) {
+                    bookingStatus.classList.remove('bg-indigo-500', 'to-indigo-600');
+                    bookingStatus.classList.add('bg-red-500', 'to-red-600');
+                } else {
+                    bookingStatus.classList.remove('bg-red-500', 'to-red-600');
+                    bookingStatus.classList.add('bg-indigo-500', 'to-indigo-600');
+                }
+            }
+            
+            // Update camera stats
+            const cameraStats = document.getElementById('cameraStats');
+            if (cameraStats) {
+                cameraStats.textContent = `Available: ${availableSlots} | Occupied: ${occupiedSlotsFromCamera} | Reserved: ${reservedSlotsFromDB} | Booked: ${currentBookedSlots}`;
+            }
+            
+            // Update trend information
+            this.updateTrend(occupiedSlotsFromCamera);
+            
+            // Update status messages
+            this.updateStatusMessages(availableSlots, reservedSlotsFromDB, currentBookedSlots);
+            
+            // Update timestamp
+            const now = new Date();
+            document.getElementById('lastUpdateTime').textContent = `Updated: ${now.toLocaleTimeString()}`;
+            document.getElementById('updatedTime').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+            
+        } catch (error) {
+            console.error('Error fetching detection data:', error);
+            document.getElementById('lastUpdateTime').textContent = 'Update failed - retrying...';
+        } finally {
+            this.isUpdating = false;
+        }
+    }
+
+    async getBookingAvailability() {
+        try {
+            const response = await fetch("{% url 'booking_availability_api' %}");
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching booking availability:', error);
+            return { booking_enabled: false, current_booked_slots: 0 };
+        }
+    }
+
+    updateStatusMessages(availableSlots, reservedSlots, currentBookedSlots) {
+        const availableStatus = document.getElementById('availableSlotsStatus');
+        const totalStatus = document.getElementById('totalSlotsStatus');
+        
+        if (availableSlots === 0 && reservedSlots > 0) {
+            availableStatus.innerHTML = '<span class="text-yellow-200">All slots reserved/occupied</span>';
+        } else if (availableSlots === 0) {
+            availableStatus.innerHTML = '<span class="text-red-200">Fully occupied</span>';
+        } else if (availableSlots < 5) {
+            availableStatus.innerHTML = '<span class="text-yellow-200">Almost full</span>';
+        } else if (availableSlots === this.TOTAL_SLOTS) {
+            availableStatus.innerHTML = '<span class="text-green-200">All slots available</span>';
+        } else {
+            availableStatus.innerHTML = '<span class="text-green-200">Ready for parking</span>';
+        }
+        
+        totalStatus.innerHTML = `<span class="text-blue-200">Available = Total - (Occupied + Reserved) | Booked: ${currentBookedSlots}</span>`;
+    }
+
+    animateValue(elementId, newValue, suffix = '') {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const currentValue = parseInt(element.textContent) || 0;
+        const difference = newValue - currentValue;
+        
+        if (difference === 0) return;
+        
+        // Add pulse animation for changes
+        if (Math.abs(difference) > 0) {
+            element.classList.add('pulse-animation');
+            setTimeout(() => {
+                element.classList.remove('pulse-animation');
+            }, 1000);
+        }
+        
+        // Update the value immediately
+        element.textContent = newValue + suffix;
+    }
+
+    updateTrend(currentOccupied) {
+        const trendElement = document.getElementById('occupancyTrend');
+        const difference = currentOccupied - this.lastOccupiedSlots;
+        
+        if (difference > 0) {
+            trendElement.innerHTML = '↑ <span class="text-red-200">+' + difference + ' from last update</span>';
+        } else if (difference < 0) {
+            trendElement.innerHTML = '↓ <span class="text-green-200">' + difference + ' from last update</span>';
+        } else {
+            trendElement.innerHTML = '→ <span class="text-blue-200">No change from last update</span>';
+        }
+        
+        this.lastOccupiedSlots = currentOccupied;
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    window.parkingUpdater = new ParkingMetricsUpdater();
+});
+
+// Your existing helper functions for modal and slot selection...
+let selectedSlot = null;
+
+function openManualEntryModal() {
+    document.getElementById('manualEntryModal').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeManualEntryModal() {
+    document.getElementById('manualEntryModal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+    resetSelectedSlot();
+}
+
+function setCurrentTime() {
+    const now = new Date();
+    const localDateTime = now.toISOString().slice(0, 16);
+    const timeInput = document.querySelector('input[name="timestamp"]');
+    if (timeInput) {
+        timeInput.value = localDateTime;
+    }
+}
+
+function selectSlot(slotNumber) {
+    if (selectedSlot) {
+        const prevSlot = document.getElementById('slot_' + selectedSlot);
+        if (prevSlot) prevSlot.classList.remove('slot-selected');
+    }
+    
+    selectedSlot = slotNumber;
+    const currentSlot = document.getElementById('slot_' + slotNumber);
+    if (currentSlot) {
+        currentSlot.classList.add('slot-selected');
+    }
+    
+    if (!document.getElementById('manualEntryModal').classList.contains('hidden')) {
+        document.getElementById('selectedSlotDisplay').textContent = 'Slot ' + slotNumber;
+        document.getElementById('selectedSlotDisplay').classList.remove('text-gray-600', 'bg-gray-100');
+        document.getElementById('selectedSlotDisplay').classList.add('text-blue-700', 'bg-blue-50');
+        document.getElementById('selectedSlotInput').value = slotNumber;
+    }
+}
+
+function resetSelectedSlot() {
+    if (selectedSlot) {
+        const slot = document.getElementById('slot_' + selectedSlot);
+        if (slot) slot.classList.remove('slot-selected');
+    }
+    selectedSlot = null;
+    document.getElementById('selectedSlotDisplay').textContent = 'No slot selected';
+    document.getElementById('selectedSlotDisplay').classList.remove('text-blue-700', 'bg-blue-50');
+    document.getElementById('selectedSlotDisplay').classList.add('text-gray-600', 'bg-gray-100');
+    document.getElementById('selectedSlotInput').value = '';
+}
+
+// Form submission handling
+document.addEventListener('DOMContentLoaded', function() {
+    const entryExitForm = document.getElementById('entryExitForm');
+    if (entryExitForm) {
+        entryExitForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch("{% url 'admin_manual_entry' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    closeManualEntryModal();
+                    // Refresh detection data after manual entry
+                    if (window.parkingUpdater) {
+                        setTimeout(() => window.parkingUpdater.updateDetectionData(), 1000);
+                    }
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request');
+            });
+        });
+    }
+});
+
+// Close modal when clicking outside
+document.getElementById('manualEntryModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeManualEntryModal();
+    }
+});
+</script>
+{% endblock %}

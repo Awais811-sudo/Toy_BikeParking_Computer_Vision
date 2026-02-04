@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+
+# Django
+db.sqlite3
+.env
+
+# ML / YOLO
+runs/
+*.pt
+
+# OS
+.DS_Store

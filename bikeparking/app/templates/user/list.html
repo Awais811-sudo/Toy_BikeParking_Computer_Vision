@@ -1,0 +1,1513 @@
+{% extends 'base1.html' %}
+{% load static %}
+
+{% block title %}My Profile - Wheel Wise Vision{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #16a34a;
+        --secondary: #3f37c9;
+        --accent: #10b981;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --text: #495057;
+        --shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+        --border-radius: 12px;
+    }
+
+    .profile-main {
+        padding: 100px 0 50px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Motorcycle Hero Section */
+    .motorcycle-hero {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .motorcycle-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 40%;
+        height: 100%;
+        background: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmlrZSUyMHBhcmtpbmclMjBiYWNrZ3JvdW5kfGVufDB8fDB8fHww') center/cover;
+        opacity: 0.1;
+        z-index: 0;
+    }
+
+    .hero-content {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1rem;
+    }
+
+    .profile-subtitle {
+        color: rgba(255,255,255,0.9);
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+
+    .hero-motorcycle {
+        font-size: 5rem;
+        opacity: 0.8;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+    }
+
+    .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .profile-card-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: url('https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=200&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmlrZSUyMHBhdHRlcm58ZW58MHx8MHx8fDA%3D') center/cover;
+        opacity: 0.1;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2.5rem;
+        color: var(--primary);
+        border: 4px solid white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .user-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .user-email {
+        opacity: 0.9;
+        font-size: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-card-body {
+        padding: 2rem;
+    }
+
+    /* Statistics Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        border-top: 4px solid var(--primary);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--text);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* User Information Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--light);
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+        border-left: 4px solid var(--primary);
+    }
+
+    .info-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .info-content h4 {
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .info-content p {
+        color: var(--text);
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    /* Section Titles */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--light);
+    }
+
+    .section-title i {
+        color: var(--primary);
+    }
+
+    /* Bookings List */
+    .bookings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .booking-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .booking-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary);
+    }
+
+    .booking-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .booking-info {
+        flex: 1;
+    }
+
+    .booking-id {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .booking-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .booking-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-vehicle {
+        background: rgba(22, 163, 74, 0.1);
+        color: var(--primary);
+        border: 1px solid rgba(22, 163, 74, 0.2);
+    }
+
+    .badge-slot {
+        background: rgba(63, 55, 201, 0.1);
+        color: var(--secondary);
+        border: 1px solid rgba(63, 55, 201, 0.2);
+    }
+
+    .booking-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-active { background: #cce7ff; color: #004085; }
+    .status-completed { background: #d1ecf1; color: #0c5460; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    .status-expired { background: #fff3cd; color: #856404; }
+
+    .booking-timeline {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: var(--light);
+        border-radius: var(--border-radius);
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .timeline-icon {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .timeline-content h5 {
+        font-size: 0.8rem;
+        color: var(--text);
+        margin: 0;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .timeline-content p {
+        font-size: 0.9rem;
+        color: var(--dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .booking-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+    }
+
+    .btn-outline:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Pagination Styles */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 2rem;
+        padding: 1rem;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+    }
+
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .page-link:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .page-link.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .page-link.disabled {
+        color: #6c757d;
+        pointer-events: none;
+        background: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .pagination-info {
+        margin-left: 1rem;
+        color: var(--text);
+        font-size: 0.9rem;
+    }
+
+    /* No Bookings State */
+    .no-bookings {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .no-bookings::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: url('https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=200&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmlrZSUyMHBhdHRlcm58ZW58MHx8MHx8fDA%3D') center/cover;
+        opacity: 0.05;
+    }
+
+    .no-bookings-icon {
+        font-size: 4rem;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        opacity: 0.7;
+    }
+
+    .no-bookings h3 {
+        color: var(--dark);
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .no-bookings p {
+        color: var(--text);
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    /* Motorcycle Features Section */
+    .features-section {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--light);
+    }
+
+    .features-title {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 2rem;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-desc {
+        color: var(--text);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    /* Alert Messages */
+    .alert-custom {
+        padding: 1rem 1.5rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2rem;
+        border-left: 4px solid;
+        box-shadow: var(--shadow);
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border-left-color: #155724;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border-left-color: #721c24;
+    }
+
+    .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border-left-color: #856404;
+    }
+
+    .alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border-left-color: #0c5460;
+    }
+
+    /* Receipt Modal Styles */
+    .receipt-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .receipt-modal.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .receipt-content {
+        background: white;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 350px;
+        max-height: 90vh;
+        overflow-y: auto;
+        transform: scale(0.8);
+        transition: all 0.3s ease;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .receipt-modal.active .receipt-content {
+        transform: scale(1);
+    }
+
+    .receipt-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+        border-radius: 15px 15px 0 0;
+        position: relative;
+    }
+
+    .receipt-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .receipt-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+
+    .receipt-body {
+        padding: 1.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        background: white;
+        min-height: 200px;
+    }
+
+    .receipt-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .receipt-info {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-bottom: 1rem;
+    }
+
+    .receipt-divider {
+        border-top: 1px dashed #333;
+        margin: 1rem 0;
+    }
+
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        padding: 0.25rem 0;
+    }
+
+    .receipt-row.total {
+        font-weight: bold;
+        border-top: 1px dashed #333;
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 1.1em;
+    }
+
+    .receipt-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px dashed #ccc;
+        font-size: 0.8rem;
+        opacity: 0.7;
+    }
+
+    .receipt-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        padding: 0 1.5rem 1.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .receipt-actions .btn {
+        min-width: 140px;
+        justify-content: center;
+    }
+
+    /* QR Code Styles */
+    .receipt-qr {
+        text-align: center;
+        margin: 1rem 0;
+        padding: 1rem;
+        border: 1px dashed #ddd;
+        border-radius: 8px;
+        background: #f9f9f9;
+    }
+
+    .receipt-qr img {
+        max-width: 120px;
+        height: auto;
+        border: 1px solid #ddd;
+        padding: 5px;
+        background: white;
+    }
+
+    /* Error State */
+    .receipt-error {
+        text-align: center;
+        padding: 2rem;
+        color: #dc3545;
+    }
+
+    .receipt-error i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.7;
+    }
+
+    /* Success Toast */
+    .toast-success {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--primary);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        z-index: 1001;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .toast-success.show {
+        transform: translateX(0);
+    }
+
+    /* Loading Spinner */
+    .spinner-border {
+        width: 2rem;
+        height: 2rem;
+        border: 0.25em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner-border .75s linear infinite;
+    }
+
+    @keyframes spinner-border {
+        to { transform: rotate(360deg); }
+    }
+
+    .visually-hidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0,0,0,0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .motorcycle-hero {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+
+        .hero-motorcycle {
+            font-size: 4rem;
+        }
+
+        .profile-title {
+            font-size: 2rem;
+        }
+
+        .booking-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .booking-timeline {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-actions {
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .booking-meta {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .info-grid, .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .receipt-content {
+            width: 95%;
+            margin: 10px;
+        }
+
+        .pagination {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .pagination-info {
+            margin-left: 0;
+            margin-top: 0.5rem;
+        }
+
+        .receipt-actions {
+            flex-direction: column;
+        }
+
+        .receipt-actions .btn {
+            min-width: auto;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-main {
+            padding: 80px 0 30px;
+        }
+
+        .profile-title {
+            font-size: 1.8rem;
+        }
+
+        .booking-card {
+            padding: 1rem;
+        }
+
+        .timeline-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Profile Main Content -->
+<div class="profile-main">
+    <div class="profile-container">
+        <!-- Motorcycle Hero Section -->
+        <div class="motorcycle-hero">
+            <div class="hero-content">
+                <h1 class="profile-title">My Profile</h1>
+                <p class="profile-subtitle">Manage your account and track your motorcycle parking reservations</p>
+            </div>
+            <div class="hero-motorcycle">
+                🏍️
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-custom alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+                <div class="d-flex align-items-center">
+                    <i class="fas 
+                        {% if message.tags == 'success' %}fa-check-circle
+                        {% elif message.tags == 'error' %}fa-exclamation-circle
+                        {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                        {% else %}fa-info-circle{% endif %} 
+                        me-2"></i>
+                    {{ message }}
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- User Info Card -->
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 class="user-name">{{ user.get_full_name|default:user.username }}</h2>
+                <p class="user-email">{{ user.email }}</p>
+            </div>
+            
+            <div class="profile-card-body">
+                <!-- Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-number">{{ total_bookings|default:"0" }}</div>
+                        <div class="stat-label">Total Bookings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-number">{{ active_bookings|default:"0" }}</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-number">{{ completed_bookings|default:"0" }}</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-hourglass-end"></i>
+                        </div>
+                        <div class="stat-number">{{ expired_bookings|default:"0" }}</div>
+                        <div class="stat-label">Expired</div>
+                    </div>
+                </div>
+
+                <!-- User Information -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Username</h4>
+                            <p>{{ user.username }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Email Address</h4>
+                            <p>{{ user.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Member Since</h4>
+                            <p>{{ user.date_joined|date:"F j, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-motorcycle"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Total Bookings</h4>
+                            <p>{{ total_bookings|default:"0" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Bookings Section -->
+                <div class="bookings-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Recent Parking Bookings
+                    </h3>
+                    
+                    <div class="bookings-list">
+                        {% if page_obj %}
+                            {% for booking in page_obj %}
+                            <div class="booking-card">
+                                <div class="booking-header">
+                                    <div class="booking-info">
+                                        <div class="booking-id">Booking #{{ booking.id }}</div>
+                                        <div class="booking-meta">
+                                            <span class="booking-badge badge-vehicle">
+                                                <i class="fas fa-motorcycle"></i>
+                                                {{ booking.vehicle_number }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span class="booking-status status-{{ booking.status }}">
+                                        {{ booking.get_status_display }}
+                                    </span>
+                                </div>
+
+                                <div class="booking-timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-sign-in-alt"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h5>Start Time</h5>
+                                            <p>{{ booking.start_time|date:"M d, Y H:i" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h5>End Time</h5>
+                                            <p>{{ booking.end_time|date:"M d, Y H:i" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="booking-actions">
+                                    
+
+                                    
+                                    <!-- View Details Button for all bookings -->
+                                    <button class="btn btn-outline view-details-btn" 
+                                            data-booking-id="{{ booking.id }}"
+                                            data-vehicle-number="{{ booking.vehicle_number }}"
+                                            data-start-time="{{ booking.start_time|date:'M d, Y H:i' }}"
+                                            data-end-time="{{ booking.end_time|date:'M d, Y H:i' }}"
+                                            data-status="{{ booking.status }}">
+                                        <i class="fas fa-eye"></i>
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <!-- Pagination -->
+                            {% if page_obj.paginator.num_pages > 1 %}
+                            <div class="pagination-container">
+                                <div class="pagination">
+                                    {% if page_obj.has_previous %}
+                                        <a href="?page=1" class="page-link">« First</a>
+                                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">‹ Previous</a>
+                                    {% else %}
+                                        <span class="page-link disabled">« First</span>
+                                        <span class="page-link disabled">‹ Previous</span>
+                                    {% endif %}
+
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <span class="page-link active">{{ num }}</span>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                        <a href="?page={{ page_obj.next_page_number }}" class="page-link">Next ›</a>
+                                        <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">Last »</a>
+                                    {% else %}
+                                        <span class="page-link disabled">Next ›</span>
+                                        <span class="page-link disabled">Last »</span>
+                                    {% endif %}
+                                </div>
+                                <div class="pagination-info">
+                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            
+                        {% else %}
+                            <div class="no-bookings">
+                                <div class="no-bookings-icon">
+                                    <i class="fas fa-motorcycle"></i>
+                                </div>
+                                <h3>No Parking Bookings Yet</h3>
+                                <p>You haven't made any motorcycle parking reservations yet. Book your first spot to get started!</p>
+                                <a href="{% url 'home' %}" class="btn btn-primary">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    Book Your First Spot
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="receipt-modal" id="receiptModal">
+    <div class="receipt-content">
+        <div class="receipt-header">
+            <h3 class="receipt-title">Booking Receipt</h3>
+            <p class="receipt-info">Your parking booking details</p>
+            <button class="receipt-close" onclick="closeReceipt()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="receipt-body" id="receiptBody">
+            <!-- Receipt content will be loaded here dynamically -->
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading receipt data...</p>
+            </div>
+        </div>
+        
+        <div class="receipt-actions">
+            <button class="btn btn-success" onclick="saveReceiptAsImage()">
+                <i class="fas fa-image"></i>
+                Save as Image
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div class="toast-success" id="successToast">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-check-circle me-2"></i>
+        <span id="toastMessage">Receipt saved successfully!</span>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// View Details Function - Opens Receipt Modal
+function viewBookingDetails(bookingId, vehicleNumber, startTime, endTime, status) {
+    console.log('Loading booking details for:', bookingId);
+    
+    // Show modal with loading state
+    const modal = document.getElementById('receiptModal');
+    const receiptBody = document.getElementById('receiptBody');
+    
+    receiptBody.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading booking details...</p>
+        </div>
+    `;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Use basic booking data to create receipt
+    const basicReceiptData = {
+        booking_id: bookingId,
+        vehicle_number: vehicleNumber,
+        start_time: startTime,
+        end_time: endTime,
+        status: status,
+        amount: 20.00, // Default amount
+        payment_status: status === 'completed' ? 'paid' : 'pending'
+    };
+    populateReceipt(basicReceiptData);
+}
+
+// Populate receipt with booking data
+function populateReceipt(receiptData) {
+    const receiptBody = document.getElementById('receiptBody');
+    
+    // Generate receipt number
+    const receiptNumber = `R${String(receiptData.booking_id).padStart(6, '0')}`;
+    const ticketNumber = `T${String(receiptData.booking_id).padStart(6, '0')}`;
+    
+    receiptBody.innerHTML = `
+        <!-- Company Header -->
+        <div class="text-center mb-3">
+            <h4 style="font-weight: bold; margin-bottom: 5px; color: #16a34a;">WHEEL WISE VISION</h4>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <!-- Receipt Info -->
+        <div class="receipt-row">
+            <span style="font-weight: bold;">Receipt No:</span>
+            <span style="font-weight: bold;">${receiptNumber}</span>
+        </div>
+        <div class="receipt-row">
+            <span>Date:</span>
+            <span>${new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            })}</span>
+        </div>
+        <div class="receipt-row">
+            <span>Time:</span>
+            <span>${new Date().toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            })}</span>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <!-- Vehicle Information -->
+        <div class="receipt-row">
+            <span style="font-weight: bold;">Vehicle No:</span>
+            <span style="font-weight: bold;">${receiptData.vehicle_number || 'N/A'}</span>
+        </div>
+        <div class="receipt-row">
+            <span>Ticket ID:</span>
+            <span>${ticketNumber}</span>
+        </div>
+        <div class="receipt-row">
+            <span>Status:</span>
+            <span style="color: ${
+                receiptData.status === 'completed' ? '#28a745' : 
+                receiptData.status === 'active' ? '#007bff' : 
+                receiptData.status === 'expired' ? '#ffc107' : '#dc3545'
+            }; font-weight: bold;">
+                ${(receiptData.status || 'pending').toUpperCase()}
+            </span>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <!-- Time Information -->
+        <div class="receipt-row">
+            <span>Start Time:</span>
+            <span>${receiptData.start_time || 'N/A'}</span>
+        </div>
+        
+        
+        
+        <!-- Payment Details -->
+        <div class="receipt-row total">
+            <span>Parking Fee:</span>
+            <span>PKR ${parseFloat(receiptData.amount || 20.00).toFixed(2)}</span>
+        </div>
+        
+        <!-- Payment Status -->
+        <div class="receipt-row">
+            <span>Payment Status:</span>
+            <span style="color: ${receiptData.payment_status === 'paid' ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                ${(receiptData.payment_status || 'pending').toUpperCase()}
+            </span>
+            
+        </div>
+        
+        <div class="receipt-row">
+            <span>Booking Id:</span>
+            <p> ${receiptData.booking_id}</p>
+            </div>
+        
+        
+        
+    `;
+    
+    // Store receipt data for download/print
+    document.getElementById('receiptModal').dataset.receiptData = JSON.stringify(receiptData);
+}
+
+// Save Receipt as Image
+function saveReceiptAsImage() {
+    const receiptContent = document.querySelector('.receipt-content');
+    const receiptNumber = document.getElementById('receiptModal').dataset.receiptData ? 
+        JSON.parse(document.getElementById('receiptModal').dataset.receiptData).booking_id : 
+        'receipt';
+    
+    // Show loading state
+    const originalButtons = document.querySelector('.receipt-actions').innerHTML;
+    document.querySelector('.receipt-actions').innerHTML = `
+        <div class="text-center py-2">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Generating image...</p>
+        </div>
+    `;
+    
+    // Use html2canvas to capture the receipt as image
+    html2canvas(receiptContent, {
+        scale: 3, // Higher quality for better image
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: receiptContent.scrollWidth,
+        height: receiptContent.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: receiptContent.scrollWidth,
+        windowHeight: receiptContent.scrollHeight
+    }).then(canvas => {
+        // Restore original buttons
+        document.querySelector('.receipt-actions').innerHTML = originalButtons;
+        
+        // Convert canvas to image and download
+        const link = document.createElement('a');
+        link.download = `receipt-${receiptNumber}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+        
+        // Show success message
+        showToast('Receipt saved as image successfully!');
+    }).catch(error => {
+        console.error('Error generating image:', error);
+        // Restore original buttons
+        document.querySelector('.receipt-actions').innerHTML = originalButtons;
+        alert('Error saving receipt as image. Please try again.');
+    });
+}
+
+// Show success toast
+function showToast(message) {
+    const toast = document.getElementById('successToast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Close Receipt Function
+function closeReceipt() {
+    const modal = document.getElementById('receiptModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners for view details buttons
+    document.querySelectorAll('.view-details-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const bookingId = this.getAttribute('data-booking-id');
+            const vehicleNumber = this.getAttribute('data-vehicle-number');
+            const startTime = this.getAttribute('data-start-time');
+            const endTime = this.getAttribute('data-end-time');
+            const status = this.getAttribute('data-status');
+            
+            viewBookingDetails(bookingId, vehicleNumber, startTime, endTime, status);
+        });
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('receiptModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeReceipt();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeReceipt();
+        }
+    });
+    
+    // Add smooth animations
+    const bookingCards = document.querySelectorAll('.booking-card');
+    bookingCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+
+// CSRF Token Helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+</script>
+{% endblock %}

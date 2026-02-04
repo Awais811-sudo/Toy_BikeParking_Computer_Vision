@@ -1,0 +1,416 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Ticket History</h1>
+    
+    <!-- Search and Filter Form -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Search -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Search</label>
+                <input type="text" name="search" value="{{ search_query }}"
+                       placeholder="Vehicle or Slot"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+            
+            <!-- Date Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Date</label>
+                <input type="date" name="date" value="{{ date_filter }}"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+            
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Status</label>
+                <select name="action" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <option value="">All</option>
+                    <option value="active" {% if action_filter == 'active' %}selected{% endif %}>Currently Parked</option>
+                    <option value="exited" {% if action_filter == 'exited' %}selected{% endif %}>Exited</option>
+                </select>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="self-end">
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Filter
+                </button>
+                <a href="{% url 'ticket_history' %}"
+                   class="ml-2 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Tickets Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ticket ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vehicle</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entry Time</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exit Time</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for ticket in page_obj %}
+                <tr class="cursor-pointer hover:bg-gray-50 transition-colors duration-150" 
+                    onclick="showTicketDetails('{{ ticket.id }}')">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        #{{ ticket.id }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ ticket.vehicle_number }}
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ ticket.entry_time|date:"Y-m-d H:i" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% if ticket.exit_time %}
+                            {{ ticket.exit_time|date:"Y-m-d H:i" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs rounded-full 
+                            {% if ticket.exit_time %}bg-gray-100 text-gray-800
+                            {% else %}bg-green-100 text-green-800{% endif %}">
+                            {% if ticket.exit_time %}Completed{% else %}Active{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                        No tickets found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Pagination -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
+            <div class="flex-1 flex justify-between sm:hidden">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}"
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}"
+                   class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </a>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing <span class="font-medium">{{ page_obj.start_index }}</span>
+                        to <span class="font-medium">{{ page_obj.end_index }}</span>
+                        of <span class="font-medium">{{ page_obj.paginator.count }}</span> results
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Previous</span>
+                            &larr;
+                        </a>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}"
+                               class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                {{ num }}
+                            </a>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}"
+                               class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                {{ num }}
+                            </a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Next</span>
+                            &rarr;
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Ticket Details Modal -->
+<div id="ticketModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white">Ticket Details</h2>
+                <button onclick="closeTicketModal()" class="text-white hover:text-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+            <div id="ticketDetails" class="space-y-6">
+                <!-- Ticket details will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div class="flex justify-end space-x-3">
+                <button onclick="generateReceipt()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd" />
+                    </svg>
+                    Print Receipt
+                </button>
+                <button onclick="closeTicketModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+
+<script>
+let currentTicketId = null;
+
+// Debug function to check if script is loading
+console.log('Ticket history script loaded');
+
+function showTicketDetails(ticketId) {
+    console.log('showTicketDetails called with ticketId:', ticketId);
+    currentTicketId = ticketId;
+    
+    // Show loading state
+    document.getElementById('ticketDetails').innerHTML = `
+        <div class="flex justify-center items-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading ticket details...</span>
+        </div>
+    `;
+    
+    // Show modal
+    document.getElementById('ticketModal').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    
+    // Fetch ticket details
+    fetch(`/api/ticket/${ticketId}/`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Ticket data received:', data);
+            if (data.status === 'success') {
+                displayTicketDetails(data.ticket);
+            } else {
+                document.getElementById('ticketDetails').innerHTML = `
+                    <div class="text-center text-red-600 py-8">
+                        <p>Error loading ticket details: ${data.message || 'Unknown error'}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching ticket:', error);
+            document.getElementById('ticketDetails').innerHTML = `
+                <div class="text-center text-red-600 py-8">
+                    <p>Error loading ticket details. Please check console.</p>
+                </div>
+            `;
+        });
+}
+
+function displayTicketDetails(ticket) {
+    console.log('Displaying ticket details:', ticket);
+    const isCompleted = ticket.exit_time !== null;
+    const duration = ticket.duration || 'Still parked';
+    const feeAmount = ticket.fee_amount || '0.00';
+    
+    document.getElementById('ticketDetails').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Basic Information -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Basic Information</h3>
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Ticket ID:</span>
+                    <span class="font-semibold">#${ticket.id}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Vehicle Number:</span>
+                    <span class="font-semibold">${ticket.vehicle_number}</span>
+                </div>
+                
+                
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Status:</span>
+                    <span class="px-2 py-1 text-xs rounded-full ${isCompleted ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'}">
+                        ${isCompleted ? 'Completed' : 'Active'}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Timing Information -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Timing Information</h3>
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Entry Time:</span>
+                    <span class="font-semibold">${new Date(ticket.entry_time).toLocaleString()}</span>
+                </div>
+                
+                ${isCompleted ? `
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Exit Time:</span>
+                    <span class="font-semibold">${new Date(ticket.exit_time).toLocaleString()}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Duration:</span>
+                    <span class="font-semibold">${duration}</span>
+                </div>
+                ` : `
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Current Duration:</span>
+                    <span class="font-semibold">${duration}</span>
+                </div>
+                `}
+            </div>
+            
+            <!-- Payment Information -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Payment Information</h3>
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Fee Amount:</span>
+                    <span class="font-semibold">PKR:20</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Payment Status:</span>
+                    <span class="px-2 py-1 text-xs rounded-full ${ticket.fee_paid ? 'bg-green-500 text-white' : 'bg-green-500 text-white'}">
+                        ${ticket.fee_paid ? 'Paid' : 'Compeleted'}
+                    </span>
+                </div>
+            </div>
+            
+
+            
+
+
+
+            
+        </div>
+        
+        ${ticket.booking ? `
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 class="font-semibold text-blue-800 mb-2">Booking Information</h4>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <div><span class="text-blue-600">Booking ID:</span> #${ticket.booking.id}</div>
+                <div><span class="text-blue-600">Status:</span> ${ticket.booking.status}</div>
+            </div>
+        </div>
+        ` : ''}
+    `;
+}
+
+function closeTicketModal() {
+    document.getElementById('ticketModal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+    currentTicketId = null;
+}
+
+function generateReceipt() {
+    if (currentTicketId) {
+        window.open(`/generate-receipt/${currentTicketId}/`, '_blank');
+    } else {
+        alert('No ticket selected');
+    }
+}
+
+// Add click event listeners to all table rows
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, adding event listeners');
+    
+    const tableRows = document.querySelectorAll('tbody tr');
+    console.log('Found table rows:', tableRows.length);
+    
+    tableRows.forEach((row, index) => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function(e) {
+            console.log('Row clicked:', index);
+            // Get the ticket ID from the first cell
+            const ticketIdText = this.cells[0].textContent.trim();
+            const ticketId = ticketIdText.replace('#', '');
+            console.log('Ticket ID extracted:', ticketId);
+            
+            if (ticketId && !isNaN(ticketId)) {
+                showTicketDetails(parseInt(ticketId));
+            } else {
+                console.error('Invalid ticket ID:', ticketId);
+            }
+        });
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('ticketModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeTicketModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeTicketModal();
+        }
+    });
+});
+</script>
+
+
+
+
+
+
+
+{% endblock %}

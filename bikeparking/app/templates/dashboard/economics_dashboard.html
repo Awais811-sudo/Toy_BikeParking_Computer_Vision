@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Economics Dashboard - BikePark Manager{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Economics Dashboard</h1>
+      <p class="text-gray-600 mt-2">Financial overview and revenue tracking</p>
+      <p class="text-sm text-gray-500 mt-1">Total Transactions: {{ transaction_count }}</p>
+    </div>
+    <div class="mt-4 md:mt-0 flex items-center space-x-4">
+      <a href="{% url 'export_economics_csv' %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+        Export CSV
+      </a>
+      <a href="{% url 'economics_report' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        Detailed Report
+      </a>
+    </div>
+  </div>
+
+  <!-- Revenue Metrics -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-green-100">Today's Revenue</p>
+          <p class="text-4xl font-bold mt-2">PKR {{ today_revenue|floatformat:2 }}</p>
+        </div>
+        <div class="bg-green-400 p-3 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        <span class="text-sm">{{ today_count }} transactions today</span>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-blue-100">Total Revenue</p>
+          <p class="text-4xl font-bold mt-2">PKR {{ total_revenue|floatformat:2 }}</p>
+        </div>
+        <div class="bg-blue-400 p-3 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        <span class="text-sm">{{ transaction_count }} total transactions</span>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-purple-100">Entry Fees</p>
+          <p class="text-4xl font-bold mt-2">PKR {{ entry_fee_revenue|floatformat:2 }}</p>
+        </div>
+        <div class="bg-purple-400 p-3 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        <span class="text-sm">{{ transaction_count_by_type.entry_fee }} entry transactions</span>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-orange-100">Subscriptions</p>
+          <p class="text-4xl font-bold mt-2">PKR {{ subscription_revenue|floatformat:2 }}</p>
+        </div>
+        <div class="bg-orange-400 p-3 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        <span class="text-sm">{{ transaction_count_by_type.subscription }} subscription transactions</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions Table -->
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800">Recent Transactions</h2>
+        <div class="text-sm text-gray-600">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+      </div>
+    </div>
+    
+    {% if page_obj.object_list %}
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="bg-gray-50">
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for transaction in page_obj %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-sm text-gray-900">#{{ transaction.id }}</td>
+            <td class="px-4 py-3">
+              <div class="text-sm font-medium text-gray-900">
+                {% if transaction.vehicle_number %}
+                  {{ transaction.vehicle_number }}
+                {% elif transaction.user %}
+                  {{ transaction.user.get_full_name|default:transaction.user.username }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </div>
+              {% if transaction.user and transaction.user.email %}
+              <div class="text-sm text-gray-500">{{ transaction.user.email }}</div>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-sm {% if transaction.amount == 0 %}text-gray-600{% else %}text-green-600{% endif %} font-semibold">
+              PKR {{ transaction.amount|floatformat:2 }}
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-600">
+              {% if transaction.transaction_type == 'entry_fee' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Entry Fee</span>
+              {% elif transaction.transaction_type == 'free_entry' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Free Entry</span>
+              {% elif transaction.transaction_type == 'booking_fee' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">Booking Fee</span>
+              {% elif transaction.transaction_type == 'subscription_payment' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">Subscription</span>
+              {% elif transaction.transaction_type == 'subscription_renewal' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">Renewal</span>
+              {% else %}
+                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">{{ transaction.transaction_type|title }}</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-600">
+              {{ transaction.payment_method|title }}
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-500">
+              {{ transaction.transaction_date|date:"M d, Y H:i" }}
+            </td>
+            <td class="px-4 py-3 text-sm">
+              {% if transaction.is_paid %}
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
+              {% else %}
+                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination Controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} transactions
+        </div>
+        <div class="flex space-x-1">
+          {% if page_obj.has_previous %}
+            <a href="?page=1" class="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors duration-200">
+              First
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors duration-200">
+              Previous
+            </a>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <span class="px-3 py-1 bg-blue-600 text-white rounded">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="?page={{ num }}" class="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors duration-200">
+                {{ num }}
+              </a>
+            {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors duration-200">
+              Next
+            </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors duration-200">
+              Last
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="px-6 py-8 text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <p class="mt-2 text-gray-500">No transactions found</p>
+      <p class="text-sm text-gray-400">Transactions will appear here when they are created</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- JavaScript for auto-refresh -->
+<script>
+// Auto-refresh the page every 30 seconds to show new transactions
+let refreshTimer;
+
+function startAutoRefresh() {
+    refreshTimer = setTimeout(function() {
+        window.location.reload();
+    }, 30000); // 30 seconds
+}
+
+function resetAutoRefresh() {
+    clearTimeout(refreshTimer);
+    startAutoRefresh();
+}
+
+// Start auto-refresh on page load
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+    
+    // Reset timer on user interaction
+    document.addEventListener('click', resetAutoRefresh);
+    document.addEventListener('keypress', resetAutoRefresh);
+    document.addEventListener('scroll', resetAutoRefresh);
+});
+
+// Also refresh when page becomes visible again
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        window.location.reload();
+    }
+});
+</script>
+{% endblock %}

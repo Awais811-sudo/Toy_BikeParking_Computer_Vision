@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff Details - {{ staff.username }} | BikePark Manager{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{% url 'staff_list' %}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Staff List
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Staff Information -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Staff Card -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <span class="text-2xl font-bold text-white">
+                            {{ staff.first_name|slice:"1" }}{{ staff.last_name|slice:"1"|default:"U" }}
+                        </span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">{{ staff.get_full_name|default:staff.username }}</h2>
+                        <p class="text-gray-600">@{{ staff.username }}</p>
+                        <div class="flex items-center space-x-2 mt-2">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium {% if staff.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if staff.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                            {% if staff.is_superuser %}
+                            <span class="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                Superuser
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Email</span>
+                        <span class="font-medium">{{ staff.email|default:"Not provided" }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Last Login</span>
+                        <span class="font-medium">
+                            {% if staff.last_login %}
+                                {{ staff.last_login|date:"M d, Y H:i" }}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Date Joined</span>
+                        <span class="font-medium">{{ staff.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Activity Logs</span>
+                        <span class="font-medium">{{ staff_logs }}</span>
+                    </div>
+                </div>
+                
+                {% if request.user.is_superuser %}
+                <div class="mt-6 pt-6 border-t border-gray-200 flex space-x-3">
+                    <a href="{% url 'edit_staff' staff.id %}" class="flex-1 text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Edit Staff
+                    </a>
+                    {% if staff.id != request.user.id %}
+                    <a href="{% url 'toggle_staff_status' staff.id %}" class="flex-1 text-center px-4 py-2 {% if staff.is_active %}bg-yellow-600 hover:bg-yellow-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white rounded-lg transition-colors">
+                        {% if staff.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Activity Distribution -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Activity Distribution</h3>
+                <div class="space-y-3">
+                    {% for activity in activity_distribution %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">
+                            {% if activity.action == 'staff_created' %}
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Staff Created
+                                </span>
+                            {% elif activity.action == 'staff_updated' %}
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Staff Updated
+                                </span>
+                            {% elif activity.action == 'staff_deleted' %}
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Staff Deleted
+                                </span>
+                            {% elif activity.action == 'staff_status_changed' %}
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Status Changed
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    {{ activity.action|title }}
+                                </span>
+                            {% endif %}
+                        </span>
+                        <span class="font-bold text-gray-800">{{ activity.count }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-center py-4">No activity recorded</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Recent Activity -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Recent Activity</h3>
+                    <span class="text-sm text-gray-500">{{ staff_logs }} total logs</span>
+                </div>
+
+                {% if staff_recent_logs %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for log in staff_recent_logs %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if log.action == 'staff_created' %}bg-green-100 text-green-800
+                                        {% elif log.action == 'staff_updated' %}bg-blue-100 text-blue-800
+                                        {% elif log.action == 'staff_deleted' %}bg-red-100 text-red-800
+                                        {% elif log.action == 'staff_status_changed' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ log.action|title }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600">
+                                    {% if log.details %}
+                                        {% with details=log.details|safe %}
+                                            {{ details|truncatechars:50 }}
+                                        {% endwith %}
+                                    {% else %}
+                                        <span class="text-gray-400">No details</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ log.ip_address|default:"Unknown" }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ log.timestamp|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if staff_logs > 10 %}
+                <div class="mt-4 text-center">
+                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">
+                        View all {{ staff_logs }} activities →
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="text-center py-12">
+                    <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">No activity recorded</h3>
+                    <p class="mt-1 text-sm text-gray-500">This staff member has no recorded activities yet.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions (for superusers) -->
+            {% if request.user.is_superuser and staff.id != request.user.id %}
+            <div class="mt-6 bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <a href="{% url 'edit_staff' staff.id %}" class="flex items-center justify-center p-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Edit Staff
+                    </a>
+                    <a href="{% url 'toggle_staff_status' staff.id %}" class="flex items-center justify-center p-4 {% if staff.is_active %}bg-yellow-50 text-yellow-700 hover:bg-yellow-100{% else %}bg-green-50 text-green-700 hover:bg-green-100{% endif %} rounded-lg transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            {% if staff.is_active %}
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                            {% else %}
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            {% endif %}
+                        </svg>
+                        {% if staff.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </a>
+                    <a href="{% url 'delete_staff' staff.id %}" class="flex items-center justify-center p-4 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Delete Staff
+                    </a>
+                    <a href="{% url 'admin:password_change' %}" class="flex items-center justify-center p-4 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                        </svg>
+                        Reset Password
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+
+
+<script>
+function resetPassword(staffId, staffName) {
+    document.getElementById('staffId').value = staffId;
+    document.getElementById('staffName').textContent = staffName;
+    document.getElementById('resetPasswordMessage').textContent = `Reset password for ${staffName}?`;
+    document.getElementById('resetPasswordModal').classList.remove('hidden');
+}
+
+function closeResetPasswordModal() {
+    document.getElementById('resetPasswordModal').classList.add('hidden');
+    document.getElementById('resetPasswordForm').reset();
+}
+
+// Handle form submission
+document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const newPassword = formData.get('new_password');
+    const confirmPassword = formData.get('confirm_password');
+    
+    if (newPassword !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        alert('Password must be at least 8 characters long!');
+        return;
+    }
+    
+    // Send AJAX request to reset password
+    fetch(`/admin/staff/${formData.get('staff_id')}/reset-password/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Password reset successfully!');
+            closeResetPasswordModal();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while resetting password.');
+    });
+});
+
+// Close modal when clicking outside
+document.getElementById('resetPasswordModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeResetPasswordModal();
+    }
+});
+</script>
+
+<style>
+#resetPasswordModal {
+    backdrop-filter: blur(4px);
+}
+</style>
+{% endblock %}

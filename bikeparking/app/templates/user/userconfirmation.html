@@ -1,0 +1,59 @@
+{% extends 'base1.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h2 class="mb-0">Booking Confirmation</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h4 class="alert-heading">Success!</h4>
+                        <p>Your parking slot has been booked successfully.</p>
+                    </div>
+                    
+                    <div class="booking-details">
+                        <h4 class="mb-3">Booking Details</h4>
+                        <ul class="list-group mb-4">
+                            <li class="list-group-item">
+                                <strong>Booking ID:</strong> #{{ booking.id }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Vehicle Number:</strong> {{ booking.vehicle_number }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Slot Number:</strong> {{ booking.slot.slot_number }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Start Time:</strong> {{ booking.start_time|date:"M d, Y H:i" }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>End Time:</strong> {{ booking.end_time|date:"M d, Y H:i" }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Status:</strong> 
+                                <span class="badge bg-{% if booking.status == 'confirmed' %}success{% else %}warning{% endif %}">
+                                    {{ booking.get_status_display }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    {% if not user.is_authenticated and booking.status == 'pending' %}
+                    <div class="alert alert-info">
+                        <p>Please check your email for verification instructions to confirm your booking.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'home' %}" class="btn btn-secondary me-md-2">Return Home</a>
+                        <a href="{% url 'my_bookings' %}" class="btn btn-primary">View My Bookings</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

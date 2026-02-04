@@ -1,0 +1,631 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff Management - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                <i class="material-icons align-middle mr-2">supervisor_account</i>
+                Staff Management
+            </h1>
+            <p class="text-gray-600 mt-1">Manage all staff members and their permissions</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'create_staff' %}"
+               class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                <i class="material-icons text-sm mr-2">person_add</i>
+                Add New Staff
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Staff Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Staff</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-2">{{ total_staff }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-blue-600">people</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Staff Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Active Staff</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-2">{{ active_staff }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-green-600">check_circle</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Superusers Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Superusers</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-2">{{ superusers }}</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-purple-600">security</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Additions Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Recent</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-2">
+                        {% if recent_additions %}
+                            {{ recent_additions }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-yellow-600">schedule</i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2">filter_list</i>
+                    Search & Filter Staff
+                </h2>
+                <button class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+                        type="button" 
+                        onclick="toggleFilters()">
+                    <i class="material-icons text-sm mr-1">expand_more</i>
+                    Toggle Filters
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6" id="filterSection">
+            <form method="get" id="filterForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Search Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Search
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="material-icons text-gray-400">search</i>
+                            </div>
+                            <input type="text" 
+                                   name="search" 
+                                   value="{{ search_query }}"
+                                   placeholder="Name, username, email..."
+                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                        </div>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Status
+                        </label>
+                        <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                            <option value="">All Status</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Only</option>
+                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive Only</option>
+                        </select>
+                    </div>
+
+                    <!-- Role Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Role
+                        </label>
+                        <select name="role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                            <option value="">All Roles</option>
+                            <option value="superuser" {% if role_filter == 'superuser' %}selected{% endif %}>Superuser</option>
+                            <option value="staff" {% if role_filter == 'staff' %}selected{% endif %}>Staff Only</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Sort By
+                        </label>
+                        <select name="sort" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name A-Z</option>
+                            <option value="username" {% if sort_by == 'username' %}selected{% endif %}>Username A-Z</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-3 pt-4">
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="material-icons text-sm mr-2">filter_alt</i>
+                        Apply Filters
+                    </button>
+                    <a href="{% url 'staff_list' %}"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                        <i class="material-icons text-sm mr-2">clear</i>
+                        Clear Filters
+                </a>
+                    <a href="{% url 'export_staff_csv' %}"
+                       class="inline-flex items-center px-4 py-2 border border-green-200 text-green-700 font-medium rounded-lg hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                        <i class="material-icons text-sm mr-2">file_download</i>
+                        Export CSV
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Staff Members Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="material-icons align-middle mr-2">groups</i>
+                        Staff Members
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Showing <span class="font-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> 
+                        of <span class="font-semibold">{{ page_obj.paginator.count }}</span> staff members
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                        {{ page_obj.paginator.count }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-200">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">person</i>
+                            Staff Member
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">email</i>
+                            Contact
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">badge</i>
+                            Role & Status
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">calendar_today</i>
+                            Date Joined
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">settings</i>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for staff in page_obj %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    {% if staff.profile_picture %}
+                                        <img src="{{ staff.profile_picture.url }}" alt="{{ staff.username }}" class="w-10 h-10 rounded-full object-cover">
+                                    {% else %}
+                                        <i class="material-icons text-blue-600">person</i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ staff.get_full_name|default:staff.username }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        @{{ staff.username }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ staff.email }}</div>
+                            <div class="text-xs text-gray-500">
+                                Last login: {{ staff.last_login|date:"M d, Y"|default:"Never" }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-wrap gap-2">
+                                {% if staff.is_superuser %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <i class="material-icons text-xs mr-1">security</i>
+                                    Superuser
+                                </span>
+                                {% endif %}
+                                
+                                {% if staff.is_staff %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="material-icons text-xs mr-1">badge</i>
+                                    Staff
+                                </span>
+                                {% endif %}
+                                
+                                {% if staff.is_active %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="material-icons text-xs mr-1">check_circle</i>
+                                    Active
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <i class="material-icons text-xs mr-1">cancel</i>
+                                    Inactive
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ staff.date_joined|date:"M d, Y" }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ staff.date_joined|timesince }} ago
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'edit_staff' staff.id %}"
+                                   class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors duration-200"
+                                   title="Edit Staff">
+                                    <i class="material-icons text-sm">edit</i>
+                                </a>
+                                
+                                <a href="{% url 'staff_detail' staff.id %}"
+                                   class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-green-50 text-green-700 hover:bg-green-100 transition-colors duration-200"
+                                   title="View Details">
+                                    <i class="material-icons text-sm">visibility</i>
+                                </a>
+                                
+                                {% if staff != request.user %}
+                                    {% if staff.is_active %}
+                                    <a href="{% url 'toggle_staff_status' staff.id %}"
+                                       class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors duration-200"
+                                       title="Deactivate"
+                                       onclick="return confirm('Are you sure you want to deactivate {{ staff.username }}?')">
+                                        <i class="material-icons text-sm">toggle_off</i>
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'toggle_staff_status' staff.id %}"
+                                       class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-green-50 text-green-700 hover:bg-green-100 transition-colors duration-200"
+                                       title="Activate"
+                                       onclick="return confirm('Are you sure you want to activate {{ staff.username }}?')">
+                                        <i class="material-icons text-sm">toggle_on</i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <a href="{% url 'delete_staff' staff.id %}"
+                                       class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-red-50 text-red-700 hover:bg-red-100 transition-colors duration-200"
+                                       title="Delete"
+                                       onclick="return confirm('Are you sure you want to delete {{ staff.username }}? This action cannot be undone.')">
+                                        <i class="material-icons text-sm">delete</i>
+                                    </a>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-gray-100 text-gray-500 cursor-not-allowed"
+                                          title="Cannot modify your own account">
+                                        <i class="material-icons text-sm">block</i>
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="material-icons text-gray-400 text-3xl">people</i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No staff members found</h3>
+                            <p class="text-gray-600 mb-6">Try adjusting your filters or add a new staff member</p>
+                            <a href="{% url 'create_staff' %}"
+                               class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                                <i class="material-icons text-sm mr-2">person_add</i>
+                                Add New Staff
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-6 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-600">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <div class="flex items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}"
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                        <i class="material-icons text-sm">first_page</i>
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}"
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                        <i class="material-icons text-sm">chevron_left</i>
+                    </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="inline-flex items-center px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-white bg-blue-600">
+                            {{ num }}
+                        </span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}"
+                           class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}"
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                        <i class="material-icons text-sm">chevron_right</i>
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}"
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                        <i class="material-icons text-sm">last_page</i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Role Distribution -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2">pie_chart</i>
+                    Role Distribution
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="material-icons text-blue-600 text-sm">badge</i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Total Staff</span>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900">{{ total_staff }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="material-icons text-purple-600 text-sm">security</i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Superusers</span>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900">{{ superusers }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="material-icons text-green-600 text-sm">check_circle</i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Active Staff</span>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900">{{ active_staff }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Additions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2">schedule</i>
+                    Recent Additions
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-3">
+                    {% for recent in recent_staff %}
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                {% if recent.profile_picture %}
+                                    <img src="{{ recent.profile_picture.url }}" alt="{{ recent.username }}" class="w-8 h-8 rounded-full object-cover">
+                                {% else %}
+                                    <i class="material-icons text-blue-600 text-sm">person</i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ recent.get_full_name|default:recent.username|truncatechars:15 }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{ recent.date_joined|date:"M d" }}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-xs {% if recent.is_superuser %}text-purple-600{% else %}text-blue-600{% endif %} font-medium">
+                            {% if recent.is_superuser %}Superuser{% else %}Staff{% endif %}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <p class="text-gray-500">No recent additions</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2">bolt</i>
+                    Quick Actions
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 gap-4">
+                    <a href="{% url 'create_staff' %}"
+                       class="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl hover:bg-green-100 transition-colors duration-200">
+                        <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-4">
+                            <i class="material-icons text-white">person_add</i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Add New Staff</h4>
+                            <p class="text-sm text-gray-600">Create a new staff account</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'export_staff_csv' %}"
+                       class="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors duration-200">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
+                            <i class="material-icons text-white">file_download</i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Export Data</h4>
+                            <p class="text-sm text-gray-600">Export staff list to CSV</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'user_logs' %}"
+                       class="flex items-center p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl hover:bg-yellow-100 transition-colors duration-200">
+                        <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center mr-4">
+                            <i class="material-icons text-white">history</i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">View Activity Logs</h4>
+                            <p class="text-sm text-gray-600">Monitor staff activities</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize filters
+    const filterSection = document.getElementById('filterSection');
+    
+    // Auto-submit on filter changes
+    const filterInputs = document.querySelectorAll('#filterForm select, #filterForm input[name="search"]');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    });
+    
+    // Debounce search
+    let searchTimeout;
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                document.getElementById('filterForm').submit();
+            }, 500);
+        });
+    }
+});
+
+function toggleFilters() {
+    const filterSection = document.getElementById('filterSection');
+    if (filterSection) {
+        filterSection.classList.toggle('hidden');
+    }
+}
+
+
+
+// Confirmation for status toggle
+document.querySelectorAll('a[href*="toggle_staff_status"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        const username = this.getAttribute('onclick').match(/'(.*?)'/)[1];
+        if (!confirm(`Are you sure you want to change the status for ${username}?`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+<style>
+/* Custom styles */
+.material-icons {
+    vertical-align: middle;
+}
+
+tr:hover {
+    background-color: #f9fafb;
+}
+
+* {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.bg-white:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.overflow-x-auto {
+    overflow-x: auto;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+</style>
+{% endblock %}

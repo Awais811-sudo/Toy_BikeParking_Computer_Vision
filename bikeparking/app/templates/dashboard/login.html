@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Login - BikeSecure</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4e54c8, #8f94fb);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo {
+            font-size: 3rem;
+            color: #4e54c8;
+            margin-bottom: 1rem;
+        }
+
+        .login-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .django-messages {
+            margin-bottom: 1rem;
+        }
+
+        .django-messages .message {
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .django-messages .error {
+            background: #fdecea;
+            color: #b71c1c;
+        }
+
+        .django-messages .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group input {
+          width: 100%;
+          padding: 0.75rem 3rem 0.75rem 1rem; /* More padding on right to accommodate two icons */
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          font-size: 1rem;
+          box-sizing: border-box;
+      }
+
+      .input-icon {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #aaa;
+          cursor: pointer;
+          right: 1rem;
+      }
+
+      .input-group .fa-lock {
+          right: 1rem; /* Position to the left of the eye icon */
+      }
+
+      .input-group .fa-eye,
+      .input-group .fa-eye-slash {
+          right: 1rem;
+      }
+
+        .error-message {
+            color: red;
+            font-size: 0.8rem;
+            display: none;
+            margin-top: 0.25rem;
+        }
+
+        .error {
+            border-color: red;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #4e54c8;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #3c41b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="fas fa-motorcycle"></i>
+            </div>
+            <h1>BikeSecure</h1>
+            <p>Login to your dashboard</p>
+        </div>
+
+        {% if messages %}
+        <div class="django-messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'dashboard_login' %}" class="login-form" id="loginForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-group">
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                    <i class="fas fa-user input-icon"></i>
+                </div>
+                <p class="error-message" id="usernameError">Please enter your username</p>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <i class="fas fa-lock input-icon"></i>
+                    <i class="fas fa-eye input-icon" id="togglePassword" style="right: 2.5rem;"></i>
+                </div>
+                <p class="error-message" id="passwordError">Please enter your password</p>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <script>
+        // Client-side validation
+        document.getElementById("loginForm").addEventListener("submit", function (e) {
+            const username = document.getElementById("username");
+            const password = document.getElementById("password");
+            let valid = true;
+
+            if (!username.value.trim()) {
+                username.classList.add("error");
+                document.getElementById("usernameError").style.display = "block";
+                valid = false;
+            } else {
+                username.classList.remove("error");
+                document.getElementById("usernameError").style.display = "none";
+            }
+
+            if (!password.value.trim()) {
+                password.classList.add("error");
+                document.getElementById("passwordError").style.display = "block";
+                valid = false;
+            } else {
+                password.classList.remove("error");
+                document.getElementById("passwordError").style.display = "none";
+            }
+
+            if (!valid) e.preventDefault();
+        });
+
+        // Toggle password visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                <i class="material-icons align-middle mr-2">person_add</i>
+                {{ title }}
+            </h1>
+            <p class="text-gray-600 mt-1">Fill in the details to {% if form.instance.id %}edit{% else %}create{% endif %} a staff member</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'staff_list' %}"
+               class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                <i class="material-icons text-sm mr-2">arrow_back</i>
+                Back to Staff List
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">
+                <i class="material-icons align-middle mr-2">edit</i>
+                Staff Information
+            </h2>
+        </div>
+        
+        <div class="p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex">
+                        <i class="material-icons text-red-500 mr-3">error</i>
+                        <div>
+                            <h4 class="font-medium text-red-800 mb-1">Error!</h4>
+                            {% for error in form.non_field_errors %}
+                            <p class="text-sm text-red-700">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left Column -->
+                    <div class="space-y-4">
+                        <!-- Username -->
+                        <div>
+                            <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Username *
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.username.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Email -->
+                        <div>
+                            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address *
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- First Name -->
+                        <div>
+                            <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                First Name
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.first_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div>
+                            <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Last Name
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.last_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div class="space-y-4">
+                        <!-- Password Fields (only for creation) -->
+                        {% if not form.instance.id %}
+                        <div>
+                            <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Password *
+                            </label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.password1.errors.0 }}</p>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-gray-500">
+                                Password must be at least 8 characters and contain letters and numbers.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Confirm Password *
+                            </label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.password2.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Permissions -->
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h3 class="text-sm font-medium text-gray-900 mb-3">Permissions</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    {{ form.is_superuser }}
+                                    <label for="{{ form.is_superuser.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                                        Superuser (full system access)
+                                    </label>
+                                </div>
+                                
+                                {% if form.instance.id %}
+                                <div class="flex items-center">
+                                    {{ form.is_active }}
+                                    <label for="{{ form.is_active.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                                        Active account
+                                    </label>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                    <div>
+                        {% if form.instance.id %}
+                        <a href="{% url 'staff_detail' form.instance.id %}"
+                           class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium">
+                            <i class="material-icons text-sm mr-1">visibility</i>
+                            View Profile
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="flex space-x-3">
+                        <a href="{% url 'staff_list' %}"
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                            Cancel
+                        </a>
+                        <button type="submit" 
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                            <i class="material-icons text-sm mr-2">save</i>
+                            {% if form.instance.id %}Update Staff{% else %}Create Staff{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Help Section -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <div class="flex">
+            <i class="material-icons text-blue-500 mr-4">help</i>
+            <div>
+                <h3 class="text-lg font-semibold text-blue-800 mb-2">Staff Management Guidelines</h3>
+                <ul class="text-sm text-blue-700 space-y-2">
+                    <li>• All staff members have access to the admin dashboard</li>
+                    <li>• Superusers have full system access including user management</li>
+                    <li>• Regular staff members can manage bookings, tickets, and reports</li>
+                    <li>• Keep passwords secure and encourage staff to change them regularly</li>
+                    <li>• Deactivate staff accounts immediately when staff leave</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

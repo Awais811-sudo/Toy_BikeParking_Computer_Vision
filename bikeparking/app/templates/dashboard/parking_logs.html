@@ -1,0 +1,1086 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Activity Logs - Admin Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+/* Custom scrollbar for table */
+.overflow-x-auto {
+    overflow-x: auto;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Table styling */
+.min-w-full {
+    min-width: 100%;
+}
+
+.min-w-full thead th {
+    background-color: #f9fafb;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.min-w-full tbody tr:last-child {
+    border-bottom-width: 0;
+}
+
+/* Hover effects */
+.hover\:bg-gray-50:hover {
+    background-color: #f9fafb;
+}
+
+/* Material Icons alignment */
+.material-icons {
+    vertical-align: middle;
+}
+
+/* Smooth transitions */
+* {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Card hover effects */
+.hover\:shadow-md:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Badge styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    border-radius: 9999px;
+}
+
+/* Ensure proper spacing */
+.space-y-6 > * + * {
+    margin-top: 1.5rem;
+}
+
+/* Modal backdrop */
+.fixed {
+    position: fixed;
+}
+
+/* Ensure proper z-index for dropdown */
+.z-10 {
+    z-index: 10;
+}
+
+.z-50 {
+    z-index: 50;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .grid-cols-1 {
+        grid-template-columns: 1fr;
+    }
+    
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .grid-cols-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                <i class="material-icons align-middle mr-2">history</i>
+                User Activity Logs
+            </h1>
+            <p class="text-gray-600 mt-1">Monitor and track all user activities in the system</p>
+        </div>
+        <div class="flex space-x-3">
+            <button type="button" 
+                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                    onclick="showExportModal()">
+                <i class="material-icons text-sm mr-2">file_download</i>
+                Export CSV
+            </button>
+            
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Logs Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Logs</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-2">{{ total_logs }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-blue-600 text-lg">storage</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Logs Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Today's Logs</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-2">{{ today_logs }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-green-600 text-lg">today</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Today Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Active Now</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-2">{% now "H:i" %}</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-purple-600 text-lg">schedule</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Frequent Action Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Top Action</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-2">
+                        {% if recent_actions %}
+                            {{ recent_actions.0.action|truncatechars:12|title }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-yellow-600 text-lg">flash_on</i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2">filter_list</i>
+                    Filter Activity Logs
+                </h2>
+                
+            </div>
+        </div>
+        
+        <div class="p-6" id="filterSection">
+            <form method="get" id="filterForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Search Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Search
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="material-icons text-gray-400 text-sm">search</i>
+                            </div>
+                            <input type="text" 
+                                   name="search" 
+                                   id="searchInput"
+                                   value="{{ search_query }}"
+                                   placeholder="Vehicle number, action..."
+                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                        </div>
+                    </div>
+
+                    <!-- Date From -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Date From
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="material-icons text-gray-400 text-sm">event</i>
+                            </div>
+                            <input type="date" 
+                                   name="date_from" 
+                                   id="dateFrom"
+                                   value="{{ date_from }}"
+                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                        </div>
+                    </div>
+
+                    <!-- Date To -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Date To
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="material-icons text-gray-400 text-sm">event</i>
+                            </div>
+                            <input type="date" 
+                                   name="date_to" 
+                                   id="dateTo"
+                                   value="{{ date_to }}"
+                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- In your filter section, update the buttons: -->
+<div class="flex flex-wrap gap-3 pt-4">
+    <button type="submit" 
+            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+        <i class="material-icons text-sm mr-2">filter_alt</i>
+        Apply Filters
+    </button>
+    <a href="{% url 'parking_logs' %}"
+            class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+        <i class="material-icons text-sm mr-2">clear</i>
+        Clear Filters
+</a>    
+</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Activity Logs Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="material-icons align-middle mr-2">list_alt</i>
+                        Activity Logs
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Showing <span class="font-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> 
+                        of <span class="font-semibold">{{ page_obj.paginator.count }}</span> records
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                        {{ page_obj.paginator.count }}
+                    </span>
+                    <div class="relative">
+                        <button class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                type="button" 
+                                id="optionsDropdown">
+                            <i class="material-icons">more_vert</i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10 hidden" id="dropdownMenu">
+                            <a href="#" 
+                               onclick="refreshPage()"
+                               class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-t-lg transition-colors duration-200">
+                                <i class="material-icons text-sm mr-3">refresh</i>
+                                Refresh
+                            </a>
+                            <a href="#" 
+                               onclick="showExportModal()"
+                               class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                                <i class="material-icons text-sm mr-3">file_download</i>
+                                Export Data
+                            </a>
+                            <div class="border-t border-gray-200"></div>
+                            <a href="#" 
+                               onclick="showClearLogsModal()"
+                               class="flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-b-lg transition-colors duration-200">
+                                <i class="material-icons text-sm mr-3">delete</i>
+                                Clear Old Logs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">schedule</i>
+                            Time
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">directions_bike</i>
+                            Vehicle
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">flash_on</i>
+                            Action
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">bookmark</i>
+                            Booking Type
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">tag</i>
+                            Booking ID
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="material-icons align-middle mr-2">settings</i>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for log in page_obj %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ log.timestamp|date:"Y-m-d" }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                {{ log.timestamp|date:"H:i:s" }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                    <i class="material-icons text-xs mr-1">tag</i>
+                                    {{ log.vehicle_number }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                {% if log.action == 'entered' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    <i class="material-icons text-xs mr-1">login</i>
+                                    ENTRY
+                                </span>
+                                {% elif log.action == 'exited' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                    <i class="material-icons text-xs mr-1">logout</i>
+                                    EXIT
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    <i class="material-icons text-xs mr-1">info</i>
+                                    {{ log.action|upper }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if log.is_prebooked %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                <i class="material-icons text-xs mr-1">bookmark</i>
+                                Pre-booked
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                <i class="material-icons text-xs mr-1">schedule</i>
+                                Walk-in
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if log.booking %}
+                            <a href="#" 
+                               class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors duration-200">
+                                <i class="material-icons text-xs mr-1">link</i>
+                                #{{ log.booking.id }}
+                            </a>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button type="button" 
+                                        onclick="showLogDetails(
+                                            '{{ log.id }}',
+                                            '{{ log.vehicle_number|escapejs }}',
+                                            '{{ log.action|escapejs }}',
+                                            '{{ log.timestamp|date:"Y-m-d H:i:s" }}',
+                                            '{{ log.is_prebooked }}',
+                                            '{{ log.booking.id|default:"" }}',
+                                            '{{ log.booking.status|default:""|escapejs }}',
+                                            '{{ log.booking.slot.number|default:"" }}'
+                                        );"
+                                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors duration-200"
+                                        title="View Details">
+                                    <i class="material-icons text-sm">visibility</i>
+                                </button>
+                                {% if log.booking %}
+                                <a href="#" 
+                                   class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors duration-200"
+                                   title="View Booking">
+                                    <i class="material-icons text-sm">open_in_new</i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="material-icons text-gray-400 text-3xl">history</i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No activity logs found</h3>
+                            <p class="text-gray-600 mb-6">Try adjusting your filters or check back later</p>
+                            
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-600">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <div class="flex items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                        <i class="material-icons text-sm">first_page</i>
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                        <i class="material-icons text-sm">chevron_left</i>
+                    </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="inline-flex items-center px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-white bg-blue-600">
+                            {{ num }}
+                        </span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                           class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                        <i class="material-icons text-sm">chevron_right</i>
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                        <i class="material-icons text-sm">last_page</i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="">
+        <!-- Recent Actions Distribution -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="material-icons align-middle mr-2">pie_chart</i>
+                    Recent Actions Distribution
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    {% for action in recent_actions %}
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            {% if action.action == 'entered' %}
+                            <i class="material-icons text-green-500 mr-3">login</i>
+                            {% elif action.action == 'exited' %}
+                            <i class="material-icons text-red-500 mr-3">logout</i>
+                            {% else %}
+                            <i class="material-icons text-blue-500 mr-3">info</i>
+                            {% endif %}
+                            <span class="text-sm font-medium text-gray-700">{{ action.action|title }}</span>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm font-medium text-gray-900">{{ action.count }}</span>
+                            <div class="w-32 bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full 
+                                    {% if action.action == 'entered' %}bg-green-500
+                                    {% elif action.action == 'exited' %}bg-red-500
+                                    {% else %}bg-blue-500{% endif %}" 
+                                     style="width: '{% widthratio action.count total_logs 100 %}%';">
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500 w-10 text-right">
+                                {% widthratio action.count total_logs 100 %}%
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <p class="text-gray-500">No data available</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh logs every 60 seconds
+    setInterval(function () {
+    if (!document.hidden && !document.getElementById('filterSection')?.classList.contains('hidden')) {
+        refreshPage();
+    }
+}, 60000);
+
+    
+    // Initialize date pickers with today's date
+    const today = new Date().toISOString().split('T')[0];
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    
+    
+    
+    // Initialize dropdown
+    const dropdownButton = document.getElementById('optionsDropdown');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    
+    if (dropdownButton && dropdownMenu) {
+        dropdownButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            dropdownMenu.classList.add('hidden');
+        });
+    }
+    
+    // Search with debounce
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                document.getElementById('filterForm').submit();
+            }, 500);
+        });
+    }
+    
+    // Date change auto-submit
+    let userInteracted = false;
+
+const dateInputs = document.querySelectorAll('input[type="date"]');
+dateInputs.forEach(input => {
+    input.addEventListener('focus', () => {
+        userInteracted = true;
+    });
+
+    input.addEventListener('change', function () {
+        if (userInteracted) {
+            document.getElementById('filterForm').submit();
+        }
+    });
+});
+
+});
+
+function refreshPage() {
+    // Preserve current filters when refreshing
+    const search = document.getElementById('searchInput')?.value || '';
+    const dateFrom = document.getElementById('dateFrom')?.value || '';
+    const dateTo = document.getElementById('dateTo')?.value || '';
+    
+    let url = window.location.pathname;
+    const params = new URLSearchParams();
+    
+    if (search) params.append('search', search);
+    if (dateFrom) params.append('date_from', dateFrom);
+    if (dateTo) params.append('date_to', dateTo);
+    
+    const queryString = params.toString();
+    if (queryString) {
+        url += '?' + queryString;
+    }
+    
+    window.location.href = url;
+}
+
+function toggleFilters() {
+    const filterSection = document.getElementById('filterSection');
+    if (filterSection) {
+        filterSection.classList.toggle('hidden');
+    }
+}
+
+
+
+
+
+
+function showExportModal() {
+    // Get current filter values
+    const search = document.getElementById('searchInput')?.value || '';
+    const dateFrom = document.getElementById('dateFrom')?.value || '';
+    const dateTo = document.getElementById('dateTo')?.value || '';
+    
+    // Create export modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-green-600">file_download</i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Export Activity Logs</h3>
+                    <p class="text-sm text-gray-600">Choose export options</p>
+                </div>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <i class="material-icons text-blue-500 mr-3">info</i>
+                    <p class="text-sm text-blue-700">This will export all activity logs to a CSV file.</p>
+                </div>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                        <option value="csv" selected>CSV (Comma Separated Values)</option>
+                        <option value="excel">Excel Format</option>
+                        <option value="pdf">PDF Report</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <div class="flex items-center mb-4">
+                        <input type="checkbox" id="applyDateRange" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                        <label for="applyDateRange" class="ml-2 text-sm text-gray-700">Apply current date filters</label>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Include Columns</label>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="colAll" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                            <label for="colAll" class="ml-2 text-sm text-gray-700">All columns</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="colBasic" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                            <label for="colBasic" class="ml-2 text-sm text-gray-700">Basic information only</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" 
+                        onclick="this.closest('.fixed').remove()"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                    Cancel
+                </button>
+                <a href="{% url 'export_user_logs_csv' %}?search=${encodeURIComponent(search)}&date_from=${dateFrom}&date_to=${dateTo}" 
+                   class="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                    <i class="material-icons text-sm mr-2">download</i>
+                    Download CSV
+                </a>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.remove();
+        }
+    });
+}
+
+function showClearLogsModal() {
+    // Create clear logs modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-red-600">warning</i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Clear Old Activity Logs</h3>
+                    <p class="text-sm text-gray-600">Permanent deletion</p>
+                </div>
+            </div>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <i class="material-icons text-red-500 mr-3">warning</i>
+                    <div>
+                        <h4 class="font-medium text-red-800 mb-1">Warning!</h4>
+                        <p class="text-sm text-red-700">This action will permanently delete activity logs older than the specified number of days.</p>
+                        <p class="text-sm text-red-700 font-medium mt-2">This action cannot be undone.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="post" action="{% url 'clear_old_logs' %}" id="clearLogsForm" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="days" class="block text-sm font-medium text-gray-700 mb-2">
+                        Delete logs older than (days):
+                    </label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200"
+                            id="days" name="days" required>
+                        <option value="7">7 days</option>
+                        <option value="30" selected>30 days</option>
+                        <option value="60">60 days</option>
+                        <option value="90">90 days</option>
+                        <option value="180">180 days</option>
+                        <option value="365">1 year</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Logs older than this will be permanently deleted.</p>
+                </div>
+                
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex">
+                        <i class="material-icons text-yellow-500 mr-3">info</i>
+                        <div>
+                            <p class="text-sm text-yellow-700">
+                                <strong>Note:</strong> Approximately 
+                                <span id="estimatedCount" class="font-semibold">0</span> 
+                                logs will be affected.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" 
+                            onclick="this.closest('.fixed').remove()"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="button" 
+                            onclick="confirmClearLogs()"
+                            class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                        <i class="material-icons text-sm mr-2">delete</i>
+                        Delete Old Logs
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.remove();
+        }
+    });
+}
+
+function confirmClearLogs() {
+    const days = document.getElementById('days').value;
+    if (confirm(`Are you absolutely sure you want to delete logs older than ${days} days?\n\nThis action cannot be undone!`)) {
+        document.getElementById('clearLogsForm').submit();
+    }
+}
+
+function showLogDetails(logId, vehicleNumber, action, timestamp, isPrebooked, bookingId, bookingStatus, slotNumber) {
+    // Create log details modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    
+    const isPrebookedBool = isPrebooked === 'True';
+    const hasBooking = bookingId && bookingId !== '';
+    
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-xl bg-white">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-blue-600">info</i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Log Details - #${logId}</h3>
+                        <p class="text-sm text-gray-600">Complete activity information</p>
+                    </div>
+                </div>
+                <button type="button" 
+                        onclick="this.closest('.fixed').remove()"
+                        class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Basic Information -->
+                <div class="space-y-4">
+                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Basic Information
+                    </h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">Log ID</label>
+                            <p class="text-sm font-medium text-gray-900">#${logId}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">Vehicle Number</label>
+                            <p class="text-sm font-medium text-gray-900">${vehicleNumber}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">Action</label>
+                            <p class="text-sm font-medium text-gray-900">
+                                ${action === 'entered' ? 
+                                    '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Entered</span>' : 
+                                    '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Exited</span>'}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">Timestamp</label>
+                            <p class="text-sm font-medium text-gray-900">${timestamp}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-500">Booking Type</label>
+                            <p class="text-sm font-medium text-gray-900">
+                                ${isPrebookedBool ? 
+                                    '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Pre-booked</span>' : 
+                                    '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">Walk-in</span>'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Information -->
+                <div class="space-y-4">
+                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Booking Information
+                    </h4>
+                    ${hasBooking ? `
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs font-medium text-gray-500">Booking ID</label>
+                                <p class="text-sm font-medium text-gray-900">#${bookingId}</p>
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-gray-500">Status</label>
+                                <p class="text-sm font-medium text-gray-900">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                        ${bookingStatus ? bookingStatus.charAt(0).toUpperCase() + bookingStatus.slice(1) : 'N/A'}
+                                    </span>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-gray-500">Slot</label>
+                                <p class="text-sm font-medium text-gray-900">
+                                    ${slotNumber ? `Slot #${slotNumber}` : '<span class="text-gray-400">Not assigned</span>'}
+                                </p>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="material-icons text-gray-400">info</i>
+                            </div>
+                            <p class="text-gray-500">No booking information available</p>
+                        </div>
+                    `}
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" 
+                        onclick="this.closest('.fixed').remove()"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                    Close
+                </button>
+                <button type="button" 
+                        onclick="printLogDetails(${logId}, '${vehicleNumber}', '${action}', '${timestamp}', ${isPrebookedBool}, ${hasBooking ? `'${bookingId}', '${bookingStatus}', '${slotNumber}'` : 'null, null, null'})"
+                        class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    <i class="material-icons text-sm mr-2">print</i>
+                    Print
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.remove();
+        }
+    });
+}
+
+function printLogDetails(logId, vehicleNumber, action, timestamp, isPrebooked, bookingId, bookingStatus, slotNumber) {
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Log Details - #${logId}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .header h1 { color: #333; margin: 0; }
+                .header p { color: #666; margin: 5px 0 0 0; }
+                .section { margin-bottom: 25px; }
+                .section h2 { color: #555; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+                .info-row { display: flex; margin-bottom: 10px; }
+                .info-label { font-weight: bold; width: 150px; color: #555; }
+                .info-value { color: #333; }
+                .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+                .badge-entry { background-color: #d1fae5; color: #065f46; }
+                .badge-exit { background-color: #fee2e2; color: #991b1b; }
+                .badge-prebooked { background-color: #fef3c7; color: #92400e; }
+                .badge-walkin { background-color: #f3f4f6; color: #374151; }
+                .badge-status { background-color: #dbeafe; color: #1e40af; }
+                @media print {
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Log Details - #${logId}</h1>
+                <p>Generated on ${new Date().toLocaleString()}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Basic Information</h2>
+                <div class="info-row">
+                    <div class="info-label">Log ID:</div>
+                    <div class="info-value">#${logId}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Vehicle Number:</div>
+                    <div class="info-value">${vehicleNumber}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Action:</div>
+                    <div class="info-value">
+                        <span class="badge ${action === 'entered' ? 'badge-entry' : 'badge-exit'}">
+                            ${action === 'entered' ? 'ENTRY' : 'EXIT'}
+                        </span>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Timestamp:</div>
+                    <div class="info-value">${timestamp}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Booking Type:</div>
+                    <div class="info-value">
+                        <span class="badge ${isPrebooked ? 'badge-prebooked' : 'badge-walkin'}">
+                            ${isPrebooked ? 'Pre-booked' : 'Walk-in'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Booking Information</h2>
+                ${bookingId ? `
+                    <div class="info-row">
+                        <div class="info-label">Booking ID:</div>
+                        <div class="info-value">#${bookingId}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Status:</div>
+                        <div class="info-value">
+                            <span class="badge badge-status">
+                                ${bookingStatus ? bookingStatus.charAt(0).toUpperCase() + bookingStatus.slice(1) : 'N/A'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Slot:</div>
+                        <div class="info-value">${slotNumber ? `Slot #${slotNumber}` : 'Not assigned'}</div>
+                    </div>
+                ` : `
+                    <div class="info-row">
+                        <div class="info-label">Booking:</div>
+                        <div class="info-value">No booking information available</div>
+                    </div>
+                `}
+            </div>
+            
+            <div class="no-print" style="margin-top: 40px; text-align: center; font-size: 12px; color: #888;">
+                <p>This document was generated from BikeSecure System</p>
+            </div>
+            
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() {
+                        window.close();
+                    }, 1000);
+                }
+            </script>
+        </body>
+        </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+}
+</script>
+{% endblock %}

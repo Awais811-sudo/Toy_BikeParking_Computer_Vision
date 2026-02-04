@@ -1,0 +1,214 @@
+<!-- core/templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard | BikeSecure{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .material-icons {
+      font-size: 20px;
+    }
+    
+    /* Active sidebar link styles */
+    .sidebar-link.active {
+      background-color: rgb(239 246 255);
+      color: rgb(37 99 235);
+      border-right: 2px solid rgb(37 99 235);
+    }
+  </style>
+</head>
+<body class="flex bg-gray-50 min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow-lg h-screen fixed flex flex-col">
+    <!-- Logo Section -->
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+        </div>
+        <span class="font-bold text-xl text-gray-800">BikeSecure</span>
+      </div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="flex-1 mt-6 overflow-y-auto">
+      <div class="px-4 mb-4">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Main</p>
+      </div>
+      
+      <a href="{% url 'admin_dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+        <span class="material-icons mr-3">dashboard</span>
+        Dashboard
+      </a>
+      
+      <a href="{% url 'booking_history' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 sidebar-link {% if request.resolver_match.url_name == 'booking_history' %}active{% endif %}">
+        <span class="material-icons mr-3">book_online</span>
+        Bookings
+      </a>
+      
+      <a href="{% url 'ticket_history' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 sidebar-link {% if request.resolver_match.url_name == 'ticket_history' %}active{% endif %}">
+        <span class="material-icons mr-3">confirmation_number</span>
+        Tickets
+      </a>
+      
+      <a href="{% url 'admin_manual_entry' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 sidebar-link {% if request.resolver_match.url_name == 'admin_manual_entry' %}active{% endif %}">
+        <span class="material-icons mr-3">directions_bike</span>
+        Manual Entry/Exit
+      </a>
+      
+      <a href="{% url 'parking_logs' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 sidebar-link {% if request.resolver_match.url_name == 'parking_logs' %}active{% endif %}">
+        <span class="material-icons mr-3">history</span>
+        Parking Logs
+      </a>
+
+      
+      
+      {% if user.is_superuser %}
+      <div class="px-4 mt-8 mb-4">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</p>
+      </div>
+      
+      <a href="{% url 'staff_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 sidebar-link">
+        <span class="material-icons mr-3">people</span>
+        Users
+      </a>
+      
+      <a href="{% url 'user_logs' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 sidebar-link">
+        <span class="material-icons mr-3">assignment</span>
+        System Logs
+      </a>
+      {% endif %}
+      
+      <div class="px-4 mt-8 mb-4">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Settings</p>
+      </div>
+
+      
+      
+      <a href="{% url 'settings' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+        <span class="material-icons mr-3">settings</span>
+        Settings
+      </a>
+
+      
+    </nav>
+    
+    <!-- User Profile Section -->
+    <div class="p-4 border-t border-gray-200 mt-auto">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+          <span class="material-icons text-blue-600">person</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-900 truncate">
+            {% if user.get_full_name %}
+              {{ user.get_full_name }}
+            {% else %}
+              {{ user.username }}
+            {% endif %}
+          </p>
+          <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 ml-64">
+    
+    <!-- Top Bar -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+      <div class="px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <!-- Mobile menu button (hidden on larger screens) -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100">
+            <span class="material-icons">menu</span>
+          </button>
+          
+          <!-- Search Bar -->
+          <div class="relative w-80">
+            <span class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></span>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <!-- Notifications -->
+          <div class="relative">
+            <button class="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors duration-200">
+              <span class="material-icons">notifications</span>
+              <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+            </button>
+          </div>
+          
+          <!-- Messages -->
+          <button class="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors duration-200">
+            <span class="material-icons">mail</span>
+          </button>
+          
+          <!-- User Menu -->
+          <div class="flex items-center space-x-2 cursor-pointer">
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <span class="text-blue-600 font-medium text-sm">
+                {% if user.get_full_name %}
+                  {{ user.get_full_name|slice:":1" }}
+                {% else %}
+                  {{ user.username|slice:":1"|upper }}
+                {% endif %}
+              </span>
+            </div>
+            <span class="text-gray-700 hidden md:block">
+              {% if user.get_full_name %}
+                {{ user.get_full_name }}
+              {% else %}
+                {{ user.username }}
+              {% endif %}
+            </span>
+            <span class="material-icons text-gray-500">keyboard_arrow_down</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="p-6 bg-gray-50 min-h-screen">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script>
+    // Simple script to handle active states and mobile menu
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mobile menu toggle
+      const mobileMenuButton = document.querySelector('button.md\\:hidden');
+      const sidebar = document.querySelector('aside');
+      
+      if (mobileMenuButton && sidebar) {
+        mobileMenuButton.addEventListener('click', function() {
+          if (window.innerWidth < 768) {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('relative');
+          }
+        });
+      }
+
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        if (window.innerWidth >= 768) {
+          sidebar.classList.remove('hidden');
+          sidebar.classList.add('fixed');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

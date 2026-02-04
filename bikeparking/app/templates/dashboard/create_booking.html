@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="max-w-2xl mx-auto">
+        <!-- Page Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Create New Booking</h1>
+            <p class="text-gray-600 mt-2">Book a parking slot for your vehicle</p>
+        </div>
+
+        <!-- Display Messages -->
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="{% if message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700{% else %}bg-green-100 border border-green-400 text-green-700{% endif %} px-4 py-3 rounded-lg relative" role="alert">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Card Header -->
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-white">Booking Details</h2>
+                    <div class="flex items-center space-x-2 bg-blue-400 px-3 py-1 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-white text-sm font-medium">Quick Booking</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <form method="POST" action="{% url 'create_booking' %}" class="p-6" id="bookingForm">
+                {% csrf_token %}
+
+                <!-- Vehicle Number Input -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2" for="vehicle_number">
+                        Vehicle Number
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-1a1 1 0 011-1h2a1 1 0 011 1v1a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1V5a1 1 0 00-1-1H3z" />
+                            </svg>
+                        </div>
+                        <input name="vehicle_number" id="vehicle_number" required
+                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 vehicle-number-input"
+                               placeholder="Enter vehicle number (e.g., ABC1234)"
+                               maxlength="10"
+                               value="{{ request.POST.vehicle_number|default:'' }}">
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1 ml-3">
+                        • Maximum 10 characters • Must contain at least 1 letter and 1 number • No spaces allowed • Auto-converted to uppercase
+                    </div>
+                    <div id="vehicleNumberFeedback" class="mt-2 text-sm font-medium hidden"></div>
+                </div>
+
+                <!-- Booking Information Card -->
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 border border-green-100 rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-green-800">Booking Information</h3>
+                            <div class="mt-1 text-sm text-green-700">
+                                <p>Booking will start immediately and expire in <span id="countdown" class="font-bold">30:00</span> minutes if not used.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700">Start Time</span>
+                        </div>
+                        <p class="text-sm text-gray-600">{{ current_time|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700">Expiry Time</span>
+                        </div>
+                        <p class="text-sm text-gray-600">{{ expire_time|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        id="submitButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    Create Booking
+                </button>
+
+                <!-- Additional Info -->
+                <div class="mt-4 text-center">
+                    <p class="text-xs text-gray-500">
+                        By creating this booking, you agree to our parking terms and conditions.
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-6 bg-blue-50 rounded-xl p-4 border border-blue-200">
+            <div class="flex items-start">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                    <h3 class="text-sm font-medium text-blue-800">Need help?</h3>
+                    <p class="text-sm text-blue-700 mt-1">
+                        If you have any questions about the booking process, please contact our support team at 
+                        <span class="font-medium">support@bikesecure.com</span> or call <span class="font-medium">+1 (555) 123-4567</span>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom focus styles for better accessibility */
+    input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
+        border-color: #3b82f6;
+    }
+    
+    /* Smooth transitions for all interactive elements */
+    button, input {
+        transition: all 0.2s ease-in-out;
+    }
+
+    /* Validation styles */
+    .validation-valid {
+        border-color: #10b981 !important;
+        background-color: #f0fdf4;
+    }
+
+    .validation-invalid {
+        border-color: #ef4444 !important;
+        background-color: #fef2f2;
+    }
+
+    .feedback-valid {
+        color: #10b981;
+        font-weight: 600;
+    }
+
+    .feedback-invalid {
+        color: #ef4444;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+// Vehicle number validation functions
+function validateVehicleNumber(vehicleNumber) {
+    // Remove any spaces and convert to uppercase
+    vehicleNumber = vehicleNumber.replace(/\s/g, '').toUpperCase();
+    
+    // Check length (max 10 characters)
+    if (vehicleNumber.length > 10) {
+        return {
+            isValid: false,
+            message: 'Vehicle number cannot exceed 10 characters'
+        };
+    }
+    
+    // Check if at least one alphabet and one numeric character exists
+    const hasAlphabet = /[A-Z]/.test(vehicleNumber);
+    const hasNumeric = /[0-9]/.test(vehicleNumber);
+    
+    if (!hasAlphabet || !hasNumeric) {
+        return {
+            isValid: false,
+            message: 'Vehicle number must contain at least one letter and one number'
+        };
+    }
+    
+    // Check if all characters are valid (only alphanumeric)
+    const isValidFormat = /^[A-Z0-9]+$/.test(vehicleNumber);
+    if (!isValidFormat) {
+        return {
+            isValid: false,
+            message: 'Vehicle number can only contain letters and numbers (no spaces or special characters)'
+        };
+    }
+    
+    return {
+        isValid: true,
+        cleanedValue: vehicleNumber
+    };
+}
+
+// Prevent invalid characters from being entered
+function preventInvalidInput(event) {
+    const key = event.key;
+    
+    // Always allow these keys
+    const allowedKeys = [
+        'Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 
+        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 
+        'Home', 'End', 'Shift', 'Control', 'Alt', 'Meta'
+    ];
+    
+    if (allowedKeys.includes(key)) {
+        return true;
+    }
+    
+    // Allow only alphanumeric characters for other keys
+    if (!/^[a-zA-Z0-9]$/.test(key)) {
+        event.preventDefault();
+        return false;
+    }
+    
+    return true;
+}
+
+// Real-time input formatting and validation
+function formatVehicleNumber(input) {
+    let value = input.value.toUpperCase();
+    
+    // Remove any spaces and special characters
+    value = value.replace(/[^A-Z0-9]/g, '');
+    
+    // Limit to 10 characters
+    if (value.length > 10) {
+        value = value.substring(0, 10);
+        showFeedback(input, 'error', 'Maximum 10 characters reached');
+    } else {
+        // Validate the current value
+        const validation = validateVehicleNumber(value);
+        if (value.length > 0) {
+            showFeedback(input, validation.isValid ? 'success' : 'error', validation.message);
+        } else {
+            clearFeedback(input);
+        }
+    }
+    
+    // Update input value
+    input.value = value;
+    
+    // Update submit button state
+    updateSubmitButtonState(input);
+    
+    return validation;
+}
+
+// Show validation feedback
+function showFeedback(input, type, message) {
+    const feedback = document.getElementById('vehicleNumberFeedback');
+    
+    // Update input styling
+    input.classList.remove('validation-valid', 'validation-invalid');
+    if (type === 'success') {
+        input.classList.add('validation-valid');
+        feedback.classList.add('feedback-valid');
+        feedback.classList.remove('feedback-invalid', 'hidden');
+    } else if (type === 'error') {
+        input.classList.add('validation-invalid');
+        feedback.classList.add('feedback-invalid');
+        feedback.classList.remove('feedback-valid', 'hidden');
+    }
+    
+    feedback.textContent = message;
+    feedback.classList.remove('hidden');
+}
+
+function clearFeedback(input) {
+    input.classList.remove('validation-valid', 'validation-invalid');
+    const feedback = document.getElementById('vehicleNumberFeedback');
+    feedback.classList.add('hidden');
+}
+
+// Update submit button state based on validation
+function updateSubmitButtonState(input) {
+    const submitButton = document.getElementById('submitButton');
+    const validation = validateVehicleNumber(input.value);
+    
+    if (input.value.trim() === '' || !validation.isValid) {
+        submitButton.disabled = true;
+    } else {
+        submitButton.disabled = false;
+    }
+}
+
+// Initialize the vehicle number input
+function setupVehicleNumberInput() {
+    const vehicleInput = document.getElementById('vehicle_number');
+    
+    if (vehicleInput) {
+        // Add input event for real-time formatting
+        vehicleInput.addEventListener('input', function() {
+            formatVehicleNumber(this);
+        });
+        
+        // Add keydown event to prevent invalid characters
+        vehicleInput.addEventListener('keydown', function(e) {
+            preventInvalidInput(e);
+        });
+        
+        // Add paste event to handle copied text
+        vehicleInput.addEventListener('paste', function(e) {
+            // Let the paste happen first, then format
+            setTimeout(() => {
+                formatVehicleNumber(this);
+            }, 0);
+        });
+        
+        // Initialize button state
+        updateSubmitButtonState(vehicleInput);
+    }
+}
+
+// Form submission validation
+function setupFormValidation() {
+    const form = document.getElementById('bookingForm');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const vehicleInput = document.getElementById('vehicle_number');
+            const vehicleNumber = vehicleInput.value.trim();
+            
+            // Validate vehicle number format
+            const validation = validateVehicleNumber(vehicleNumber);
+            if (!validation.isValid) {
+                e.preventDefault();
+                showFeedback(vehicleInput, 'error', validation.message);
+                vehicleInput.focus();
+                return false;
+            }
+            
+            // Update the input with cleaned value
+            vehicleInput.value = validation.cleanedValue;
+            return true;
+        });
+    }
+}
+
+// Countdown Timer Script
+function startCountdown() {
+    let seconds = 1800; // 30 minutes
+    const countdownEl = document.getElementById("countdown");
+
+    function updateCountdown() {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        
+        // Update the countdown display
+        countdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        
+        // Change color when under 5 minutes
+        if (seconds <= 300) { // 5 minutes
+            countdownEl.classList.remove('text-green-700');
+            countdownEl.classList.add('text-red-600', 'font-bold');
+        }
+        
+        seconds--;
+        
+        // Continue countdown if time remains
+        if (seconds >= 0) {
+            setTimeout(updateCountdown, 1000);
+        } else {
+            countdownEl.textContent = "Expired!";
+        }
+    }
+
+    // Start the countdown
+    updateCountdown();
+}
+
+// Initialize everything when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setupVehicleNumberInput();
+    setupFormValidation();
+    startCountdown();
+});
+</script>
+{% endblock %}

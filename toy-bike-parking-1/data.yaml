@@ -1,0 +1,16 @@
+names:
+- bikes
+- occupied
+- others
+- slots
+- slots-bike-occupied-others
+nc: 5
+roboflow:
+  license: CC BY 4.0
+  project: toy-bike-parking-g1nhx
+  url: https://universe.roboflow.com/fyp-project-rjniu/toy-bike-parking-g1nhx/dataset/1
+  version: 1
+  workspace: fyp-project-rjniu
+test: ../test/images
+train: ../train/images
+val: ../valid/images
